@@ -1,0 +1,52 @@
+{
+  "theirName": "Maya",
+  "yourName": "Ethan",
+  "dedication": "Every photo in here is a moment I never want to forget. This place is yours.",
+  "finalWords": "Of all the places I've been, my favourite is next to you.",
+  "music": "piano",
+  "photos": [
+    {
+      "src": "/demo/photos/01.webp",
+      "thumb": "/demo/photos/01_t.webp",
+      "w": 1280,
+      "h": 853,
+      "caption": "Where it all began"
+    },
+    {
+      "src": "/demo/photos/02.webp",
+      "thumb": "/demo/photos/02_t.webp",
+      "w": 853,
+      "h": 1280,
+      "caption": "Our first autumn walk"
+    },
+    {
+      "src": "/demo/photos/03.webp",
+      "thumb": "/demo/photos/03_t.webp",
+      "w": 1280,
+      "h": 854,
+      "caption": "The kiss I still think about"
+    },
+    {
+      "src": "/demo/photos/04.webp",
+      "thumb": "/demo/photos/04_t.webp",
+      "w": 853,
+      "h": 1280,
+      "caption": "The day we said yes"
+    },
+    {
+      "src": "/demo/photos/05.webp",
+      "thumb": "/demo/photos/05_t.webp",
+      "w": 1280,
+      "h": 491,
+      "caption": "That endless beach"
+    },
+    {
+      "src": "/demo/photos/06.webp",
+      "thumb": "/demo/photos/06_t.webp",
+      "w": 853,
+      "h": 1280,
+      "caption": "Holding on"
+    }
+  ],
+  "roomKey": "demo-room-local"
+}

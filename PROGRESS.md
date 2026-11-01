@@ -7,7 +7,11 @@
 | B1 Walk test on phone | ✅ Done 2026-11-01 | `web/`: capsule at `spawn_her`, joystick + drag-to-look, WASD + mouse, trimesh collisions, wall-safe 3rd-person camera, timer (first step → garden) + room name + Restart |
 | B1 Owner phone walk | ✅ Done | Layout approved. Camera fixes applied (see below) |
 | B1 Game feel (`design/game-feel.md` §1–3, §5) | ✅ Built 2026-11-01 | Spring-eased movement, spring-arm camera, floating joystick, pointer lock. Tuning in `web/src/config/gameFeel.ts`. Owner: test on Mac 120 Hz + phone |
-| A2 Structure details | ⏳ Next | Owner (ceilings, skirting, trims, glass) |
+| Museum update | ✅ Done 2026-11-01 | No windows, full-height doorways (garden arch kept), garden empty. Slots: 43 frames (priority 1/2/3), collage board + 12 slots, screen, 4 seats |
+| B2 Photos + frames | ✅ Built 2026-11-01 | `web/src/gallery/`: collage = first 12, then frames by priority → route order; contain fit, 9:16–16:9 crop; mat + gold mitred moulding, polaroids, board moulding, plant for empty frames; thumbnails → full within 4 m. Tuning: `web/src/config/frames.ts`. Demo: `?demo=6` / `?demo=30` (default 30). Owner: test |
+| Owner: re-export `museum.glb` | ⏳ Needed | Turn on Include → Custom Properties; `priority` is in the .blend but not in the current export (all frames fall back to priority 3) |
+| B2b Photo viewer (tap → full screen) | ⏳ Next | |
+| A2 Structure details | ⏳ | Owner (ceilings, skirting, door trims) |
 
 ## B1 tuning values (easy to change)
 - Walk speed 2.2 m/s (Shift = 4.0 m/s on desktop): `web/src/player/Player.tsx`

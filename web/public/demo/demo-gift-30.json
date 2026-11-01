@@ -1,0 +1,220 @@
+{
+  "theirName": "Maya",
+  "yourName": "Ethan",
+  "dedication": "Every photo in here is a moment I never want to forget. This place is yours.",
+  "finalWords": "Of all the places I've been, my favourite is next to you.",
+  "music": "piano",
+  "photos": [
+    {
+      "src": "/demo/photos/01.webp",
+      "thumb": "/demo/photos/01_t.webp",
+      "w": 1280,
+      "h": 853,
+      "caption": "Where it all began"
+    },
+    {
+      "src": "/demo/photos/02.webp",
+      "thumb": "/demo/photos/02_t.webp",
+      "w": 853,
+      "h": 1280,
+      "caption": "Our first autumn walk"
+    },
+    {
+      "src": "/demo/photos/03.webp",
+      "thumb": "/demo/photos/03_t.webp",
+      "w": 1280,
+      "h": 854,
+      "caption": "The kiss I still think about"
+    },
+    {
+      "src": "/demo/photos/04.webp",
+      "thumb": "/demo/photos/04_t.webp",
+      "w": 853,
+      "h": 1280,
+      "caption": "The day we said yes"
+    },
+    {
+      "src": "/demo/photos/05.webp",
+      "thumb": "/demo/photos/05_t.webp",
+      "w": 1280,
+      "h": 491,
+      "caption": "That endless beach"
+    },
+    {
+      "src": "/demo/photos/06.webp",
+      "thumb": "/demo/photos/06_t.webp",
+      "w": 853,
+      "h": 1280,
+      "caption": "Holding on"
+    },
+    {
+      "src": "/demo/photos/07.webp",
+      "thumb": "/demo/photos/07_t.webp",
+      "w": 1280,
+      "h": 853,
+      "caption": "Boardwalk at dusk"
+    },
+    {
+      "src": "/demo/photos/08.webp",
+      "thumb": "/demo/photos/08_t.webp",
+      "w": 853,
+      "h": 1280,
+      "caption": "Golden hour, just us"
+    },
+    {
+      "src": "/demo/photos/09.webp",
+      "thumb": "/demo/photos/09_t.webp",
+      "w": 1280,
+      "h": 850,
+      "caption": "Lost, together"
+    },
+    {
+      "src": "/demo/photos/10.webp",
+      "thumb": "/demo/photos/10_t.webp",
+      "w": 853,
+      "h": 1280,
+      "caption": "Your hand in mine"
+    },
+    {
+      "src": "/demo/photos/11.webp",
+      "thumb": "/demo/photos/11_t.webp",
+      "w": 1280,
+      "h": 853,
+      "caption": "Two bikes, one road"
+    },
+    {
+      "src": "/demo/photos/12.webp",
+      "thumb": "/demo/photos/12_t.webp",
+      "w": 960,
+      "h": 1280,
+      "caption": "Growing old with you"
+    },
+    {
+      "src": "/demo/photos/13.webp",
+      "thumb": "/demo/photos/13_t.webp",
+      "w": 853,
+      "h": 1280,
+      "caption": "Chasing waterfalls"
+    },
+    {
+      "src": "/demo/photos/14.webp",
+      "thumb": "/demo/photos/14_t.webp",
+      "w": 853,
+      "h": 1280,
+      "caption": "Married!"
+    },
+    {
+      "src": "/demo/photos/15.webp",
+      "thumb": "/demo/photos/15_t.webp",
+      "w": 1280,
+      "h": 869,
+      "caption": "Sunset, barefoot"
+    },
+    {
+      "src": "/demo/photos/16.webp",
+      "thumb": "/demo/photos/16_t.webp",
+      "w": 1280,
+      "h": 960,
+      "caption": "Fifty years from now"
+    },
+    {
+      "src": "/demo/photos/17.webp",
+      "thumb": "/demo/photos/17_t.webp",
+      "w": 1280,
+      "h": 853,
+      "caption": "The long drive"
+    },
+    {
+      "src": "/demo/photos/18.webp",
+      "thumb": "/demo/photos/18_t.webp",
+      "w": 1280,
+      "h": 851,
+      "caption": "City of columns"
+    },
+    {
+      "src": "/demo/photos/19.webp",
+      "thumb": "/demo/photos/19_t.webp",
+      "w": 1280,
+      "h": 853,
+      "caption": "Top of the world"
+    },
+    {
+      "src": "/demo/photos/20.webp",
+      "thumb": "/demo/photos/20_t.webp",
+      "w": 1280,
+      "h": 853,
+      "caption": "Our favourite beach"
+    },
+    {
+      "src": "/demo/photos/21.webp",
+      "thumb": "/demo/photos/21_t.webp",
+      "w": 853,
+      "h": 1280,
+      "caption": "Running free"
+    },
+    {
+      "src": "/demo/photos/22.webp",
+      "thumb": "/demo/photos/22_t.webp",
+      "w": 1280,
+      "h": 854,
+      "caption": "Wherever you go"
+    },
+    {
+      "src": "/demo/photos/23.webp",
+      "thumb": "/demo/photos/23_t.webp",
+      "w": 1280,
+      "h": 621,
+      "caption": "Our bench by the sea"
+    },
+    {
+      "src": "/demo/photos/24.webp",
+      "thumb": "/demo/photos/24_t.webp",
+      "w": 1280,
+      "h": 853,
+      "caption": "Morning sun"
+    },
+    {
+      "src": "/demo/photos/25.webp",
+      "thumb": "/demo/photos/25_t.webp",
+      "w": 1280,
+      "h": 1280,
+      "caption": "All the balloons"
+    },
+    {
+      "src": "/demo/photos/26.webp",
+      "thumb": "/demo/photos/26_t.webp",
+      "w": 1280,
+      "h": 853,
+      "caption": "Christmas lights"
+    },
+    {
+      "src": "/demo/photos/27.webp",
+      "thumb": "/demo/photos/27_t.webp",
+      "w": 1280,
+      "h": 852,
+      "caption": "Laughing at nothing"
+    },
+    {
+      "src": "/demo/photos/28.webp",
+      "thumb": "/demo/photos/28_t.webp",
+      "w": 1280,
+      "h": 853,
+      "caption": "Valentine's Day"
+    },
+    {
+      "src": "/demo/photos/29.webp",
+      "thumb": "/demo/photos/29_t.webp",
+      "w": 853,
+      "h": 1280,
+      "caption": "Our first dance"
+    },
+    {
+      "src": "/demo/photos/30.webp",
+      "thumb": "/demo/photos/30_t.webp",
+      "w": 1280,
+      "h": 853,
+      "caption": "The last light of summer"
+    }
+  ],
+  "roomKey": "demo-room-local"
+}

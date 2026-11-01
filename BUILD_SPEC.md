@@ -48,7 +48,7 @@ Units metres, Blender Z up (glTF exports Y up). Origin = foyer south-west corner
 | 5 Screen room | `room_5_screen_room` | 26.5–38, 1.5–13 |
 | 6 Garden (enclosed) | `room_6_garden` | 38–52, 0–16 |
 
-Walls 4 m high (outer 0.4 m, inner 0.25 m). Doors 3 m wide × 3 m high (entrance 3.2 m). Windows sill 1.0 m, top 3.2 m. Garden walls 2.4 m. Arched garden door.
+Walls 4 m high (outer 0.4 m, inner 0.25 m). No windows. Doorways 3 m wide and full wall height (open to the ceiling); the garden door keeps its arch. Garden walls 2.4 m. The garden is empty for now (the owner adds its assets later).
 
 ---
 
@@ -59,10 +59,10 @@ Follow `assets-src/blender/BLENDER_GUIDE.md`. Order:
 | Step | What | Then |
 |---|---|---|
 | **A1** | Export the walls-only `museum.glb` now | Claude Code does **B1**: walk test on your phone. Don't polish until the size and pacing feel right. |
-| **A2** | Structure details: ceilings, skirting, door and window trims, glass | export → check in browser |
+| **A2** | Structure details: ceilings, skirting, door trims | export → check in browser |
 | **A3** | Materials (CC0 textures, 1K) | export → check |
-| **A4** | Frames and photo slots | export → Claude Code does **B2** |
-| **A5** | Furniture and decor (rose arch, welcome wall, benches, screen, easel, plants) | export → check |
+| **A4** | Photo slots, collage board, screen, seats (frames are built in code) | export → Claude Code does **B2** ✅ |
+| **A5** | Furniture and decor (rose arch, welcome wall, benches, easel with `slot_centrepiece`, plants) | export → check |
 | **A6** | Garden (grass, roses, path, trees, string lights) | export → check |
 | **A7** | Lighting + route markers (doors, path dots) | export → Claude Code does **B3** |
 | **A8** | Bake lighting, final export | Claude Code optimises the file (B5) |
@@ -79,20 +79,21 @@ Keep these names exactly. Anything not listed is free to name as you like.
 |---|---|---|
 | `room_1_foyer` … `room_6_garden` | empty | Room centres (music, lighting, triggers) |
 | `spawn_her`, `spawn_him` | empty | Start points at the entrance, facing into the foyer |
-| `slot_centrepiece` | plane | Photo #1 on the garden easel (largest) |
-| `slot_heart_01` … `06` | plane | Photos #2–#7 on the heart wall |
-| `slot_frame_01` … `23` | plane | Remaining photos, numbered in route order |
-| `deco_swap_frame_01` … `23` | any | Shown instead of a frame when there are fewer photos |
-| `frame_01` … `23` | mesh | The frame around each slot (hidden together with its slot) |
-| `screen_surface` | plane | Slideshow screen in the screen room |
-| `seat_screen_1/2`, `seat_garden_1/2` | empty | Where avatars sit, facing forward (−Y in Blender) |
+| `slot_frame_01` … `43` | plane | Gallery photo boxes, numbered in route order. Square, 1.0–1.8 m. Custom property `priority` = 1, 2 or 3 |
+| `collage_board` | plane | 5.0 × 3.0 m board on the heart room north wall (gets a gold moulding in code) |
+| `slot_collage_01` … `12` | plane | Photo boxes scattered on the collage board, mixed sizes, slightly tilted (the tilt is kept) |
+| `slot_centrepiece` | plane | Optional. Photo on the garden easel; the photo's bottom edge rests on the plane's bottom edge (the ledge) |
+| `screen_surface` | plane | 4.8 × 2.7 m slideshow screen on the screen room north wall |
+| `seat_screen_1/2`, `seat_garden_1/2` | empty | Where avatars sit; local −Y (Blender) = where the sitter looks |
 | `welcome_wall_text` | plane | Area for the "For {name}" welcome text |
 | `door_01` … `06` | empty | Centre of each doorway in route order |
 | `path_000` … `path_NNN` | empty | Route trail points on the floor, in order |
 | `col_*` | mesh | Invisible collision boxes for furniture (walls and floors collide automatically) |
 | `rt_light_*` | light | Lights that stay live in the browser (everything else is baked) |
 
-Slot planes: front faces into the room, origin in the centre, size = the largest photo area inside the frame. The web fits each photo inside it by aspect ratio.
+Slot planes: each keeps its own position and rotation, origin in the centre, front faces into the room, UV upright, 3 cm in front of the wall. Size = the largest photo area. The web hides every slot plane and builds the frame around the photo itself (§5). Frames, mats and placeholders are **not** modelled in Blender.
+
+Export with **Include → Custom Properties** on, so `priority` reaches the web (missing → treated as 3).
 
 ---
 
@@ -113,7 +114,20 @@ Slot planes: front faces into the room, origin in the centre, size = the largest
   "roomKey": "demo-room-local"
 }
 ```
-Demo photos: Pixabay License, listed in `ASSETS.md`.
+Demo photos: Pixabay License, listed in `ASSETS.md`. 30 photos, mixed aspect ratios (landscape, portrait, square, two panoramas); `demo-gift-6` uses the first 6.
+
+**Which photo goes where**
+1. Collage: the first 12 photos, into `slot_collage_01…12` in order. Unused collage slots stay empty.
+2. Frames: the remaining photos by `priority` (1 → 2 → 3), route order (slot number) within a priority.
+3. `slot_centrepiece` (if present): photo #1.
+4. Empty frames: a small placeholder plant on the floor below the slot.
+
+**How a photo is shown** (tuning in `web/src/config/frames.ts`)
+- Aspect clamped to 9:16–16:9; anything beyond is centre-cropped. Then fitted inside its box (contain).
+- Frame: white mat 8 cm + gold mitred moulding 6 cm wide, 4 cm deep, back against the wall.
+- Collage photo: thin white polaroid border. The collage board gets the gold moulding.
+- Centrepiece: board style (gold moulding, no mat), bottom edge on the ledge.
+- One shared material each (gold, mat, pot, leaf); frames, mats and plants are merged into one mesh per material. Thumbnails first, full size within 4 m of the camera.
 
 ---
 
@@ -122,7 +136,8 @@ Demo photos: Pixabay License, listed in `ASSETS.md`.
 **B1 — Walk test.** Vite app in `web/`. Load `museum.glb`, capsule (or character) at `spawn_her`, third-person camera that never clips walls, joystick + drag-to-look on phone, WASD + mouse on desktop, collisions from walls, floors and `col_*`. On-screen timer from entrance to garden. Run with `npm run dev -- --host` and explain how to open it on a phone on the same Wi-Fi.
 **OWNER:** walk it on your phone. Judge room sizes, doors, pacing, walk time. Report changes before polishing in Blender.
 
-**B2 — Photos.** Fill slots from the demo file: thumbnails first, full size within 4 m. Empty slots → hide `slot_frame_NN` + `frame_NN`, show `deco_swap_frame_NN`. Tap a photo → full screen with caption, swipe next/previous.
+**B2 — Photos.** Fill slots from the demo file as in §5, frames built in code: thumbnails first, full size within 4 m. Empty frames → placeholder plant.
+**B2b — Photo viewer.** Tap a photo → full screen with caption, swipe next/previous.
 
 **B3 — The 7 moments.**
 1. Intro card: dedication typed line by line → "Open your gift" (starts music, fades in over 3 s).

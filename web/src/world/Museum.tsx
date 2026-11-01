@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
+import { Gallery } from '../gallery/Gallery'
 import { useWalk } from '../store'
 import { useMuseumColliders } from './useMuseumColliders'
 
@@ -13,6 +14,7 @@ const PLACEHOLDER = new THREE.MeshStandardMaterial({ color: '#ece6dc', roughness
 /**
  * Loads the hand-made museum, hides `col_*` boxes, gives material-less meshes a
  * placeholder, and reports `spawn_her`. Colliders: useMuseumColliders.
+ * Photos and frames: Gallery.
  * Never builds geometry itself.
  */
 export function Museum() {
@@ -39,7 +41,12 @@ export function Museum() {
     useWalk.getState().setLoaded([p.x, p.y, p.z])
   }, [scene])
 
-  return <primitive object={scene} />
+  return (
+    <>
+      <primitive object={scene} />
+      <Gallery scene={scene} />
+    </>
+  )
 }
 
 useGLTF.preload(MODEL_URL)
