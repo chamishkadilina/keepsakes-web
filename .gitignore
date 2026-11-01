@@ -1,0 +1,16 @@
+.DS_Store
+__pycache__/
+# Blender build outputs (rebuilt from assets-src/blender scripts)
+assets-src/blender/build/
+*.blend1
+# Blender
+*.blend2
+# Web
+node_modules/
+dist/
+.vite/
+# Secrets
+.env
+.env.*
+!.env.example
+# macOS
