@@ -20,5 +20,9 @@ Read `BUILD_SPEC.md` before any task. Do one step, show the result, update `PROG
 6. Assets: only CC0, Pixabay License, SIL OFL, MIT/ISC. Add every asset to `ASSETS.md`. No Mixamo, no "personal use only", nothing copied from other gift sites.
 7. Never commit secrets. `.env.local` stays out of git. Never invent API keys.
 8. If a request would hurt quality, speed or clarity, say so and suggest a better option first.
+9. Make `design/game-feel.md` the movement standard: player movement, camera and controls must match it. Its values live only in `web/src/config/gameFeel.ts`.
+10. The owner tests every step manually and says "passed". Never build debug overlays, test harnesses, trace scripts or measurement tools unless the owner asks.
+11. Clean, simple, maintainable code: small focused files, clear names, no dead code, no hacks, tuning values only in config files.
+12. Work efficiently: read only the files needed, don't run the dev server or browser tests, short summaries.
 
 Blender (for read-only tools): `/Applications/Blender.app/Contents/MacOS/Blender --background --python <script>` (5.2.3 LTS).

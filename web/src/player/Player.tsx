@@ -1,0 +1,103 @@
+import { useEffect, useRef } from 'react'
+import { useFrame } from '@react-three/fiber'
+import { CapsuleCollider, RigidBody, useBeforePhysicsStep, useRapier, type RapierRigidBody } from '@react-three/rapier'
+import type { Collider, KinematicCharacterController } from '@dimforge/rapier3d-compat'
+import { Vector3, type Group, type MeshStandardMaterial } from 'three'
+import { MOVEMENT, PHYSICS, PLAYER } from '../config/gameFeel'
+import { resetLook } from '../input/input'
+import { dampAngle } from '../lib/smoothing'
+import { useWalk } from '../store'
+import { GARDEN, roomAt } from '../world/rooms'
+import { cameraYaw, resetRig, updateCamera } from './cameraRig'
+import { fadeOpacity, setOpacity } from './fade'
+import { CAPSULE_CENTER, createController, newMoveState, stepMovement } from './movement'
+
+/**
+ * Placeholder player: a capsule moved by the character controller in the
+ * physics step. The camera runs in useFrame *after* the step (Physics
+ * updatePriority = -1) and follows the capsule's interpolated position.
+ */
+export function Player() {
+  const rapierCtx = useRapier()
+  const { world, rapier } = rapierCtx
+  const body = useRef<RapierRigidBody>(null)
+  const collider = useRef<Collider>(null)
+  const visual = useRef<Group>(null)
+  const materials = useRef<MeshStandardMaterial[]>([])
+  const controller = useRef<KinematicCharacterController | null>(null)
+  const state = useRef(newMoveState())
+  const opacity = useRef(1)
+  const feet = useRef(new Vector3())
+  const { loaded, spawn, resetCount } = useWalk()
+
+  useEffect(() => {
+    const c = createController(world)
+    controller.current = c
+    return () => world.removeCharacterController(c)
+  }, [world])
+
+  // Place at spawn_her on load and on Restart, facing into the foyer (north).
+  useEffect(() => {
+    const p = { x: spawn[0], y: spawn[1] + CAPSULE_CENTER + MOVEMENT.skin, z: spawn[2] }
+    body.current?.setTranslation(p, true)
+    body.current?.setNextKinematicTranslation(p)
+    state.current = newMoveState()
+    if (visual.current) visual.current.rotation.y = 0
+    resetLook()
+    resetRig()
+  }, [loaded, spawn, resetCount])
+
+  useBeforePhysicsStep((w) => {
+    const b = body.current
+    const col = collider.current
+    const c = controller.current
+    if (!b || !col || !c) return
+    const dt = Math.min(w.timestep, PHYSICS.maxDelta)
+    const next = stepMovement(state.current, c, world, rapier, col, b, cameraYaw(), dt)
+    b.setNextKinematicTranslation(next)
+
+    const walk = useWalk.getState()
+    if (state.current.moved) walk.start()
+    const room = roomAt(next.x, next.z)
+    walk.setRoom(room)
+    if (room === GARDEN) walk.finish()
+    if (next.y < MOVEMENT.fallResetHeight) walk.restart()
+  })
+
+  useFrame((frame, delta) => {
+    const v = visual.current
+    const col = collider.current
+    const b = body.current
+    if (!v || !col || !b) return
+    const dt = Math.min(delta, PHYSICS.maxDelta)
+
+    v.getWorldPosition(feet.current)
+    feet.current.y -= CAPSULE_CENTER
+    v.rotation.y = dampAngle(v.rotation.y, state.current.heading, MOVEMENT.turnTime, dt)
+
+    const aspect = frame.size.width / frame.size.height
+    const motion = state.current.motion
+    const dist = updateCamera(frame.camera, feet.current, motion, MOVEMENT.walkSpeed, rapierCtx, col, b, aspect, dt)
+
+    opacity.current = fadeOpacity(opacity.current, dist, dt)
+    setOpacity(materials.current, opacity.current)
+    v.visible = opacity.current > 0.01
+  })
+
+  return (
+    <RigidBody ref={body} type="kinematicPosition" colliders={false} position={[spawn[0], spawn[1] + CAPSULE_CENTER, spawn[2]]}>
+      <CapsuleCollider ref={collider} args={[PLAYER.halfHeight, PLAYER.radius]} />
+      <group ref={visual}>
+        <mesh>
+          <capsuleGeometry args={[PLAYER.radius, PLAYER.halfHeight * 2, 6, 16]} />
+          <meshStandardMaterial ref={(m) => { if (m) materials.current[0] = m }} color="#e9a6a0" roughness={0.6} />
+        </mesh>
+        {/* Small "nose" so you can see which way the capsule faces. */}
+        <mesh position={[0, 0.55, -PLAYER.radius]}>
+          <boxGeometry args={[0.16, 0.08, 0.12]} />
+          <meshStandardMaterial ref={(m) => { if (m) materials.current[1] = m }} color="#5a3b36" />
+        </mesh>
+      </group>
+    </RigidBody>
+  )
+}
