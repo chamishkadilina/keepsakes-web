@@ -49,7 +49,8 @@ export function Photo({ placed }: { placed: PlacedPhoto }) {
   return (
     <mesh position={position} quaternion={quaternion}>
       <planeGeometry args={[fit.width, fit.height]} />
-      <meshBasicMaterial map={texture} color={PHOTO.color} />
+      {/* The couple's photo, exactly as uploaded: no tint, no tone mapping (design/lighting.md). */}
+      <meshBasicMaterial map={texture} toneMapped={false} />
     </mesh>
   )
 }

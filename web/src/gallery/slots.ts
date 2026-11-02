@@ -1,5 +1,6 @@
 import * as THREE from 'three'
 import { ASSIGN } from '../config/frames'
+import { LIGHTING } from '../config/lighting'
 
 /**
  * A photo area from museum.glb. Its "frame space" is the space the gallery
@@ -13,6 +14,7 @@ export type Slot = {
   width: number
   height: number
   matrix: THREE.Matrix4
+  light: THREE.Color // baked light on this spot (linear), from `light_rgb`
 }
 
 export type MuseumSlots = {
@@ -30,6 +32,7 @@ function toSlot(mesh: THREE.Mesh, number: number): Slot {
   mesh.geometry.computeBoundingBox()
   const size = mesh.geometry.boundingBox!.getSize(new THREE.Vector3())
   const priority = Number(mesh.userData.priority ?? ASSIGN.defaultPriority)
+  const light = (mesh.userData.light_rgb ?? LIGHTING.fallbackLight) as [number, number, number]
   return {
     name: mesh.name,
     number,
@@ -37,6 +40,7 @@ function toSlot(mesh: THREE.Mesh, number: number): Slot {
     width: size.x,
     height: size.z,
     matrix: mesh.matrixWorld.clone().multiply(PLANE_TO_FRAME_SPACE),
+    light: new THREE.Color(...light),
   }
 }
 
@@ -47,6 +51,7 @@ export function findSlots(scene: THREE.Object3D): MuseumSlots {
   scene.updateMatrixWorld(true)
   const found: MuseumSlots = { frames: [], collage: [], collageBoard: null, centrepiece: null, planes: [] }
   let missingPriority = 0
+  let missingLight = 0
 
   scene.traverse((obj) => {
     if (!(obj instanceof THREE.Mesh)) return
@@ -59,6 +64,7 @@ export function findSlots(scene: THREE.Object3D): MuseumSlots {
     else if (obj.name === 'slot_centrepiece') found.centrepiece = toSlot(obj, 0)
     else if (obj.name === 'collage_board') found.collageBoard = toSlot(obj, 0)
     else return
+    if (obj.userData.light_rgb === undefined) missingLight++
     if (obj.name.startsWith('slot_')) found.planes.push(obj)
   })
 
@@ -66,6 +72,9 @@ export function findSlots(scene: THREE.Object3D): MuseumSlots {
     console.warn(
       `museum.glb: ${missingPriority} frame slots have no "priority" (export with Include → Custom Properties). Using ${ASSIGN.defaultPriority}.`,
     )
+  }
+  if (missingLight > 0) {
+    console.warn(`museum.glb: ${missingLight} slots have no "light_rgb" (re-run the bake). Using a neutral light.`)
   }
   found.frames.sort(byNumber)
   found.collage.sort(byNumber)

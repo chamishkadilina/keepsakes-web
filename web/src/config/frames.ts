@@ -13,8 +13,7 @@ export const PHOTO = {
   minAspect: 9 / 16, // taller photos are centre-cropped to this
   maxAspect: 16 / 9, // wider photos are centre-cropped to this
   fullResDistance: 4, // m from the camera: swap the thumbnail for the full photo
-  anisotropy: 4,
-  color: '#f2f2f2', // slightly below white so photos don't glow
+  anisotropy: 8,
 }
 
 /** Gallery frame: white mat + gold mitred moulding. */
@@ -46,11 +45,14 @@ export const POLAROID = {
   z: -0.001,
 }
 
+/** Albedo colours; the baked light per slot multiplies them (design/lighting.md). */
 export const MATERIALS = {
-  gold: { color: '#c9a24a', roughness: 0.4, metalness: 0.4 },
-  mat: { color: '#f7f4ee', roughness: 0.9, metalness: 0 },
-  pot: { color: '#b0674a', roughness: 0.9, metalness: 0 },
-  leaf: { color: '#4f7d3a', roughness: 0.75, metalness: 0 },
+  mat: '#ffffff',
+  pot: '#b0674a',
+  leaf: '#4f7d3a',
+  /** Gold matcap, generated in code: highlight → body → shadow from the centre out. */
+  goldMatcap: ['#fff4d0', '#e0b85c', '#a87a2c', '#4a3210'] as const,
+  goldMatcapSize: 256,
 }
 
 /** Placeholder shown on the floor below an empty frame. */

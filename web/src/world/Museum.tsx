@@ -3,43 +3,39 @@ import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
 import { Gallery } from '../gallery/Gallery'
 import { useWalk } from '../store'
+import { applyBakedMaterials } from './bakedMaterials'
+import { setFloorLight } from './floorLight'
+import { useLightmaps } from './lightmaps'
 import { useMuseumColliders } from './useMuseumColliders'
 
 const MODEL_URL = '/models/museum.glb'
 
-// Meshes exported without a material get glTF's default (fully metallic → black).
-// Until the owner assigns materials in Blender (A3), show them as matte plaster.
-const PLACEHOLDER = new THREE.MeshStandardMaterial({ color: '#ece6dc', roughness: 0.9, metalness: 0, side: THREE.DoubleSide })
-
 /**
- * Loads the hand-made museum, hides `col_*` boxes, gives material-less meshes a
- * placeholder, and reports `spawn_her`. Colliders: useMuseumColliders.
- * Photos and frames: Gallery.
+ * Loads the hand-made museum, hides `col_*` boxes, draws it with its baked
+ * lightmaps (design/lighting.md) and reports `spawn_her`.
+ * Colliders: useMuseumColliders. Photos and frames: Gallery.
  * Never builds geometry itself.
  */
 export function Museum() {
   const { scene } = useGLTF(MODEL_URL)
+  const lightmaps = useLightmaps()
   useMuseumColliders(scene)
 
   useEffect(() => {
+    const floors: THREE.Object3D[] = []
     scene.traverse((obj) => {
       if (obj.name.startsWith('col_')) obj.visible = false
-      if (obj instanceof THREE.Mesh) {
-        if ((obj.material as THREE.Material).name === '') {
-          console.warn(`museum.glb: "${obj.name}" has no material, using placeholder`)
-          obj.material = PLACEHOLDER
-        }
-        const mats = Array.isArray(obj.material) ? obj.material : [obj.material]
-        mats.forEach((m) => (m.side = THREE.DoubleSide))
-      }
+      if (obj.userData.lightmap_group === 'floors') floors.push(obj)
     })
+    applyBakedMaterials(scene, lightmaps)
     scene.updateMatrixWorld(true)
+    if (lightmaps.textures.floors) setFloorLight(floors, lightmaps.textures.floors, lightmaps.intensity)
     const spawn = scene.getObjectByName('spawn_her')
     const p = new THREE.Vector3()
     if (spawn) spawn.getWorldPosition(p)
     else console.warn('museum.glb has no spawn_her; using origin')
     useWalk.getState().setLoaded([p.x, p.y, p.z])
-  }, [scene])
+  }, [scene, lightmaps])
 
   return (
     <>

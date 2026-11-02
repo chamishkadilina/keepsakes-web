@@ -1,3 +1,4 @@
+# macOS / Python
 .DS_Store
 __pycache__/
 # Blender build outputs (rebuilt from assets-src/blender scripts)
@@ -13,5 +14,4 @@ dist/
 .env
 .env.*
 !.env.example
-# macOS
 *.tsbuildinfo

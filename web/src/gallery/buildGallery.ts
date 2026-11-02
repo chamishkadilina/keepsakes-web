@@ -16,7 +16,11 @@ export type PlacedPhoto = {
   quaternion: THREE.Quaternion
 }
 
-/** Everything the gallery draws: a few merged meshes plus one plane per photo. */
+/**
+ * Everything the gallery draws: a few merged meshes plus one plane per photo.
+ * Merged meshes carry each slot's baked light as vertex colours (design/lighting.md);
+ * photos never do: they show their exact original colours.
+ */
 export type GalleryLayout = {
   gold: THREE.BufferGeometry | null
   white: THREE.BufferGeometry | null
@@ -39,8 +43,12 @@ export function buildGallery(slots: MuseumSlots, photos: GiftPhoto[], floors: TH
   const placed: PlacedPhoto[] = []
   const plantSpots: THREE.Vector3[] = []
 
-  const add = (list: THREE.BufferGeometry[], geometry: THREE.BufferGeometry, matrix: THREE.Matrix4) =>
-    list.push(geometry.applyMatrix4(matrix))
+  // Gold is a matcap: its light is normalised so the brightest slot = 1.
+  const goldScale = 1 / brightestLight(slots)
+  const add = (list: THREE.BufferGeometry[], geometry: THREE.BufferGeometry, matrix: THREE.Matrix4, light: THREE.Color) =>
+    list.push(paint(geometry, light).applyMatrix4(matrix))
+  const addGold = (geometry: THREE.BufferGeometry, matrix: THREE.Matrix4, light: THREE.Color) =>
+    add(gold, geometry, matrix, light.clone().multiplyScalar(goldScale))
 
   function placePhoto(slot: Slot, index: number, style: Style) {
     const photo = photos[index]
@@ -53,15 +61,15 @@ export function buildGallery(slots: MuseumSlots, photos: GiftPhoto[], floors: TH
 
     if (style === 'frame') {
       const m = FRAME.matWidth
-      add(white, quadGeometry(fit.width + 2 * m, fit.height + 2 * m, { x: 0, y: 0, z: FRAME.matZ }), centre)
-      add(gold, mouldingGeometry(hw + m, hh + m), centre)
+      add(white, quadGeometry(fit.width + 2 * m, fit.height + 2 * m, { x: 0, y: 0, z: FRAME.matZ }), centre, slot.light)
+      addGold(mouldingGeometry(hw + m, hh + m), centre, slot.light)
     } else if (style === 'polaroid') {
       const w = fit.width + 2 * POLAROID.side
       const h = fit.height + POLAROID.top + POLAROID.bottom
-      add(white, quadGeometry(w, h, { x: 0, y: (POLAROID.top - POLAROID.bottom) / 2, z: POLAROID.z }), centre)
+      add(white, quadGeometry(w, h, { x: 0, y: (POLAROID.top - POLAROID.bottom) / 2, z: POLAROID.z }), centre, slot.light)
     } else {
-      add(gold, mouldingGeometry(hw, hh), centre)
-      add(white, quadGeometry(fit.width, fit.height, { x: 0, y: 0, z: -FRAME.wallGap }, true), centre)
+      addGold(mouldingGeometry(hw, hh), centre, slot.light)
+      add(white, quadGeometry(fit.width, fit.height, { x: 0, y: 0, z: -FRAME.wallGap }, true), centre, slot.light)
     }
 
     const position = new THREE.Vector3()
@@ -78,8 +86,8 @@ export function buildGallery(slots: MuseumSlots, photos: GiftPhoto[], floors: TH
     spot.y = hit.point.y
     const parts = plantParts(slot.number * 2.4)
     const at = new THREE.Matrix4().makeTranslation(spot.x, spot.y, spot.z)
-    add(pots, parts.pot, at)
-    parts.leaves.forEach((leaf) => add(leaves, leaf, at))
+    add(pots, parts.pot, at, slot.light)
+    parts.leaves.forEach((leaf) => add(leaves, leaf, at, slot.light))
     plantSpots.push(spot)
   }
 
@@ -90,7 +98,7 @@ export function buildGallery(slots: MuseumSlots, photos: GiftPhoto[], floors: TH
   if (slots.centrepiece && assignment.centrepiece !== null) placePhoto(slots.centrepiece, assignment.centrepiece, 'board')
   if (slots.collageBoard) {
     const board = slots.collageBoard
-    add(gold, mouldingGeometry(board.width / 2, board.height / 2), board.matrix)
+    addGold(mouldingGeometry(board.width / 2, board.height / 2), board.matrix, board.light)
   }
 
   return {
@@ -101,6 +109,20 @@ export function buildGallery(slots: MuseumSlots, photos: GiftPhoto[], floors: TH
     photos: placed,
     plantSpots,
   }
+}
+
+function brightestLight(slots: MuseumSlots): number {
+  const all = [...slots.frames, ...slots.collage, slots.collageBoard, slots.centrepiece]
+  return Math.max(...all.map((slot) => (slot ? Math.max(slot.light.r, slot.light.g, slot.light.b) : 0)), 1e-6)
+}
+
+/** Fills a geometry's vertex colours with one colour. */
+function paint(geometry: THREE.BufferGeometry, color: THREE.Color): THREE.BufferGeometry {
+  const count = geometry.getAttribute('position').count
+  const colors = new Float32Array(count * 3)
+  for (let i = 0; i < count; i++) color.toArray(colors, i * 3)
+  geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3))
+  return geometry
 }
 
 function merge(list: THREE.BufferGeometry[]): THREE.BufferGeometry | null {

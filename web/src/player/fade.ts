@@ -1,4 +1,4 @@
-import type { MeshStandardMaterial } from 'three'
+import type { MeshBasicMaterial } from 'three'
 import { CAMERA } from '../config/gameFeel'
 import { damp } from '../lib/smoothing'
 
@@ -9,7 +9,7 @@ export function fadeOpacity(current: number, cameraDistance: number, dt: number)
 }
 
 /** Applies opacity; switches to transparent rendering only while faded. */
-export function setOpacity(materials: MeshStandardMaterial[], opacity: number) {
+export function setOpacity(materials: MeshBasicMaterial[], opacity: number) {
   const solid = opacity > 0.99
   for (const m of materials) {
     m.opacity = opacity

@@ -10,6 +10,8 @@
 | Museum update | ✅ Done 2026-11-01 | No windows, full-height doorways (garden arch kept), garden empty. Slots: 43 frames (priority 1/2/3), collage board + 12 slots, screen, 4 seats |
 | B2 Photos + frames | ✅ Built 2026-11-01 | `web/src/gallery/`: collage = first 12, then frames by priority → route order; contain fit, 9:16–16:9 crop; mat + gold mitred moulding, polaroids, board moulding, plant for empty frames; thumbnails → full within 4 m. Tuning: `web/src/config/frames.ts`. Demo: `?demo=6` / `?demo=30` (default 30). Owner: test |
 | Owner: re-export `museum.glb` | ⏳ Needed | Turn on Include → Custom Properties; `priority` is in the .blend but not in the current export (all frames fall back to priority 3) |
+| Baked lighting (`design/lighting.md`) | ✅ Built 2026-11-02 (bright romantic re-bake) | No real-time lights. Static meshes: `MeshBasicMaterial` + lightmap per `lightmap_group` (intensity × π, three divides by π). Photos: exact original colours (white, `toneMapped = false`, anisotropy 8). Mats/plants/board frame: slot `light_rgb`; gold: code-generated matcap, light normalised to brightest slot. Capsule tinted by the floor lightmap (0.3 s). AgX, exposure 1. Tuning: `web/src/config/lighting.ts`. Owner: compare with `design/lighting-reference/baked-*.png` |
+| Owner: `ceiling_light_fixtures` | ⏳ Needed | Has no `lightmap_group` or `light_rgb`, so it is drawn unlit (base colour). Add it to a bake group, or give it `light_rgb` |
 | B2b Photo viewer (tap → full screen) | ⏳ Next | |
 | A2 Structure details | ⏳ | Owner (ceilings, skirting, door trims) |
 

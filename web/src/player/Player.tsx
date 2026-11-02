@@ -2,15 +2,20 @@ import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { CapsuleCollider, RigidBody, useBeforePhysicsStep, useRapier, type RapierRigidBody } from '@react-three/rapier'
 import type { Collider, KinematicCharacterController } from '@dimforge/rapier3d-compat'
-import { Vector3, type Group, type MeshStandardMaterial } from 'three'
+import { Color, Vector3, type Group, type MeshBasicMaterial } from 'three'
 import { MOVEMENT, PHYSICS, PLAYER } from '../config/gameFeel'
+import { LIGHTING } from '../config/lighting'
 import { resetLook } from '../input/input'
-import { dampAngle } from '../lib/smoothing'
+import { damp, dampAngle } from '../lib/smoothing'
 import { useWalk } from '../store'
+import { floorLightAt } from '../world/floorLight'
 import { GARDEN, roomAt } from '../world/rooms'
 import { cameraYaw, resetRig, updateCamera } from './cameraRig'
 import { fadeOpacity, setOpacity } from './fade'
 import { CAPSULE_CENTER, createController, newMoveState, stepMovement } from './movement'
+
+// Unlit albedo of the capsule and its nose; the baked floor light tints them.
+const ALBEDO = [new Color('#e9a6a0'), new Color('#5a3b36')]
 
 /**
  * Placeholder player: a capsule moved by the character controller in the
@@ -23,7 +28,9 @@ export function Player() {
   const body = useRef<RapierRigidBody>(null)
   const collider = useRef<Collider>(null)
   const visual = useRef<Group>(null)
-  const materials = useRef<MeshStandardMaterial[]>([])
+  const materials = useRef<MeshBasicMaterial[]>([])
+  const light = useRef<Color | null>(null) // smoothed floor light under the feet
+  const floorLight = useRef(new Color())
   const controller = useRef<KinematicCharacterController | null>(null)
   const state = useRef(newMoveState())
   const opacity = useRef(1)
@@ -79,6 +86,12 @@ export function Player() {
     const motion = state.current.motion
     const dist = updateCamera(frame.camera, feet.current, motion, MOVEMENT.walkSpeed, rapierCtx, col, b, aspect, dt)
 
+    if (floorLightAt(feet.current, floorLight.current)) {
+      if (light.current) light.current.lerp(floorLight.current, damp(LIGHTING.characterTintTime, dt))
+      else light.current = floorLight.current.clone()
+      materials.current.forEach((m, i) => m.color.copy(ALBEDO[i]).multiply(light.current!))
+    }
+
     opacity.current = fadeOpacity(opacity.current, dist, dt)
     setOpacity(materials.current, opacity.current)
     v.visible = opacity.current > 0.01
@@ -90,12 +103,12 @@ export function Player() {
       <group ref={visual}>
         <mesh>
           <capsuleGeometry args={[PLAYER.radius, PLAYER.halfHeight * 2, 6, 16]} />
-          <meshStandardMaterial ref={(m) => { if (m) materials.current[0] = m }} color="#e9a6a0" roughness={0.6} />
+          <meshBasicMaterial ref={(m) => { if (m) materials.current[0] = m }} color={ALBEDO[0]} />
         </mesh>
         {/* Small "nose" so you can see which way the capsule faces. */}
         <mesh position={[0, 0.55, -PLAYER.radius]}>
           <boxGeometry args={[0.16, 0.08, 0.12]} />
-          <meshStandardMaterial ref={(m) => { if (m) materials.current[1] = m }} color="#5a3b36" />
+          <meshBasicMaterial ref={(m) => { if (m) materials.current[1] = m }} color={ALBEDO[1]} />
         </mesh>
       </group>
     </RigidBody>
