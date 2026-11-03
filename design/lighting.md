@@ -4,9 +4,9 @@ Target: the owner's final reference video (`design/reference-final/*.png`, frame
 
 - warm cream-beige plain walls, tall cream skirting, thin gold panel lines on the gallery walls
 - cream tray ceilings with a small cornice and gold lines, a few recessed downlights
-- black track rails with white spot heads: every photo sits in its own soft pool of light, brightest just above the frame
+- slim black track rails with champagne-gold spot heads (black yoke and bezel, the warm lens deep in a gold reflector): every photo sits in its own soft pool of light, brightest just above the frame
 - every photo in a slim modern rose-gold frame with a wide warm-white mat and a fine rose-gold bevel (fresh and romantic, not antique); the frame casts a soft shadow on the wall below it (no picture-light bars)
-- the heart room's back wall: a softly backlit niche (its back wall the same warm beige as the walls) with the collage: a centred mosaic of mixed sizes in exactly the same frames, equal gaps everywhere
+- the heart room's back wall: a softly backlit niche (its back wall the same warm beige as the walls) with the collage: a relaxed, centred gallery wall of mixed sizes in exactly the same frames, equal gaps everywhere
 - glossy dark walnut-cherry floor with soft reflections of the lights; red and blush-pink rose petals and a few roses along the path that scatter when you walk through them
 - no plants (the owner will add real assets later), no fairy lights, no sconces, no picture lights
 
@@ -43,7 +43,7 @@ After loading `museum.glb`, in this order:
 
 ```ts
 await applyBakedLighting(gltf.scene, "/models/lightmaps");   // lighting/bakedLighting.ts
-addCeilingLights(gltf.scene);                                 // lighting/ceilingLights.ts
+addCeilingLights(gltf.scene);                                 // lighting/ceilingLights.ts (downlights, track lights, glare)
 const petals = createRosePetals(path);                        // decor/rosePetals.ts
 scene.add(petals);
 useFrame(({ camera }, delta) => petals.update(camera.position, delta));   // petals move around the visitor's feet
@@ -65,16 +65,17 @@ useFrame(({ camera }) => reflection.update(camera));          // runs before R3F
 ```
 
 - `bakedLighting.ts`: walls / floors / ceilings (albedo × lightmap, uv1, intensity × π), mouldings, tray cornices, the niche and the gold lines (vertex colours: lit like the room around them), spot lenses and niche LEDs (warm glow), track lights (shaded in their colour). Removes any exported lights. Logs an error if nothing got light (wrong path).
-- `ceilingLights.ts`: recessed downlights (gold trim, deep reflector, hot lens) over the plain discs in the model, and a soft glare on every downlight and spot lens that grows when you look into the beam, like real lamps. Also glints in the floor reflection. 3 draw calls in total.
+- `ceilingLights.ts`: recessed downlights (gold trim, deep reflector, hot lens) over the plain discs in the model, the track lights (`trackLights.ts`) over the plain rails and spot heads, and a soft glare on every lamp that grows when you look into the beam, like real lamps (a track spot only glows when you can see into it). Also glints in the floor reflection. 11 draw calls in total.
+- `trackLights.ts` (used by `addCeilingLights`, no extra call): slim satin-black rails with gold end caps and, on them, a designer spot for every photo: black adapter, swivel and U-yoke with gold knobs, a champagne-gold cylinder head with a fine black band and bezel, and the warm lens deep in a gold reflector. Built from the rails and lenses in `museum.glb`, so every spot keeps the aim of its baked light. Instanced: 8 draw calls for all of them.
 - `floorReflection.ts`: soft glossy reflections on the wood floor (`strength`, `roughness`). One extra low-resolution render of the (unlit, cheap) scene per frame. Objects with `userData.noReflection = true` are skipped (petals).
-- `matcaps.ts`: polished gold (lamp trims), satin rose gold (photo frames) and a soft neutral shading, drawn in code.
+- `matcaps.ts`: polished gold (lamp trims, spot heads), satin rose gold (photo frames), satin black (track lights) and a soft neutral shading, drawn in code.
 - `photoFrame.ts`: slim rose-gold metal frame (flat face, softly rounded edges, 2.5–3.75 cm wide), wide warm-white mat (shown as it is, like the photo, so it stays clean white) with a fine rose-gold bevel, and the soft shadow the frame casts under the ceiling spot. 4 draw calls per frame.
-- `collageWall.ts`: mosaic of mixed sizes, every photo in exactly the same frame as the single photos (a little slimmer, as they are smaller): the same gap between every two frames (`gap`, 5 cm), the same margin to the niche on all four sides (`margin`, ~10 cm), centred, the largest photo near the middle. Photos keep their aspect ratio. The same photos always give the same layout (`seed` gives another arrangement). Laid out once when it is created (well under 0.1 s); no cast shadows in the lit niche, so the gaps show the clean warm wall; 2 draw calls for all frames and mats plus one per photo.
+- `collageWall.ts`: a gallery wall like a real home: frames of different sizes fitted together like a puzzle around the middle (no rows or columns, no big holes), the same small gap between neighbouring frames (`gap`, 5 cm), the whole wall centred in the niche with at least `margin` (10 cm) to the edge. Every photo in exactly the same frame as the single photos; no cast shadows in the lit niche. Photos keep their aspect ratio. The same photos always give the same layout (`seed` gives another arrangement). Laid out once when created (well under 0.2 s); 2 draw calls for all frames and mats plus one per photo.
 - `rosePetals.ts`: `path` = floor points along the walking route (`[x, z]`, three.js coordinates). ~300 petals + 14 roses for the whole museum. `update()` each frame: petals within ~45 cm of the visitor's feet are swept aside, hop a few centimetres, spin and settle flat again; roses roll a little. Only nearby petals move (~0.03 ms per frame), and none drift more than 80 cm from where they were laid.
 
 ## Performance (measured)
 
-Busiest view: ~130 draw calls and ~120k triangles including the reflection pass (phone portrait views: 45–60 draw calls). Everything is unlit (baked / matcap), so phones stay cool. If a phone struggles: `createFloorReflection(..., { resolution: 0.25 })` first, then `dpr={[1, 1.5]}`.
+Busiest view: ~265 draw calls and ~285k triangles per frame, floor reflection pass included (phone portrait views: 50–110 draw calls). Everything is unlit (baked / matcap), so phones stay cool. If a phone struggles: `createFloorReflection(..., { resolution: 0.25 })` first, then `dpr={[1, 1.5]}`.
 
 ## Remove from earlier versions
 

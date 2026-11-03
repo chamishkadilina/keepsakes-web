@@ -86,7 +86,30 @@ export function createFrameMaterial(options: THREE.MeshMatcapMaterialParameters 
   return new THREE.MeshMatcapMaterial({ matcap: createFrameMatcap(), toneMapped: false, ...options });
 }
 
-/** Soft studio shading in white: tint it with the material colour (fixtures, track lights, petals). */
+let satinBlack: THREE.CanvasTexture | null = null;
+
+/** Satin black (track lights): deep warm black with a soft sheen from the room's lights and a warm bounce from the floor. */
+export function createSatinBlackMatcap(): THREE.CanvasTexture {
+  return (satinBlack ??= drawMatcap(128, (g, size) => {
+    const body = g.createLinearGradient(0, 0, 0, size);
+    body.addColorStop(0, "#5c544e");
+    body.addColorStop(0.35, "#2b2624");
+    body.addColorStop(0.72, "#151312");
+    body.addColorStop(1, "#2a1d16");
+    g.fillStyle = body;
+    g.fillRect(0, 0, size, size);
+    const rim = g.createRadialGradient(size / 2, size / 2, size * 0.32, size / 2, size / 2, size * 0.5);
+    rim.addColorStop(0, "rgba(8,6,5,0)");
+    rim.addColorStop(1, "rgba(8,6,5,0.6)");
+    g.fillStyle = rim;
+    g.fillRect(0, 0, size, size);
+    g.globalCompositeOperation = "lighter";
+    highlight(g, size, 0.42, 0.26, 0.32, "rgba(255,236,214,0.2)");     // broad satin sheen
+    highlight(g, size, 0.44, 0.2, 0.09, "rgba(255,246,236,0.42)");     // soft hot spot
+  }));
+}
+
+/** Soft studio shading in white: tint it with the material colour (fixtures, petals). */
 export function createSoftMatcap(): THREE.CanvasTexture {
   return (soft ??= drawMatcap(128, (g, size) => {
     const body = g.createLinearGradient(0, 0, 0, size);

@@ -1,15 +1,16 @@
 import * as THREE from "three";
 import { createGoldMaterial } from "./matcaps";
+import { createTrackLights, type Lamp } from "./trackLights";
 
 /**
  * Real-looking light fittings over the simple shapes in museum.glb:
- * recessed downlights (polished gold trim, deep reflector, hot lens) and a soft glare on every downlight and
- * spot lens that grows when you look into the beam, the way the eye and a camera see real lamps.
- * 3 draw calls for all lamps. No real-time lights.
+ * recessed downlights (polished gold trim, deep reflector, hot lens), the gallery track lights (trackLights.ts) and
+ * a soft glare on every lamp that grows when you look into the beam, the way the eye and a camera see real lamps.
+ * 11 draw calls for all lamps. No real-time lights.
  */
 const FITTINGS = [
-  { name: "downlight_fixtures", glare: 0.7, strength: 0.8 },      // recessed downlights in the ceiling trays
-  { name: "light_lenses", glare: 0.45, strength: 0.9 },           // lenses of the track spots
+  { name: "downlight_fixtures", glare: 0.7, strength: 0.8, cutoff: -0.1 },   // recessed downlights in the ceiling trays
+  { name: "light_lenses", glare: 0.45, strength: 0.9, cutoff: 0.4 },         // track spots: the lens hides deep in the head
 ];
 
 function canvasTexture(size: number, draw: (g: CanvasRenderingContext2D, c: number) => void): THREE.CanvasTexture {
@@ -49,7 +50,7 @@ const glareTexture = () => canvasTexture(128, (g, c) => {
 });
 
 /** Finds each lamp in a merged fitting mesh: groups vertices within 20 cm; the lamp faces along its mean normal. */
-function lamps(mesh: THREE.Mesh): { p: THREE.Vector3; axis: THREE.Vector3 }[] {
+function lamps(mesh: THREE.Mesh): Lamp[] {
   const { position, normal } = mesh.geometry.attributes;
   const v = new THREE.Vector3(), n = new THREE.Vector3(), normalMatrix = new THREE.Matrix3().getNormalMatrix(mesh.matrixWorld);
   const found: { p: THREE.Vector3; axis: THREE.Vector3; count: number }[] = [];
@@ -63,17 +64,23 @@ function lamps(mesh: THREE.Mesh): { p: THREE.Vector3; axis: THREE.Vector3 }[] {
   return found.map(({ p, axis }) => ({ p, axis: axis.lengthSq() > 0 ? axis.normalize() : new THREE.Vector3(0, -1, 0) }));
 }
 
-/** Glare sprites: brighter and larger when the camera looks into the lamp's beam. Works in the floor reflection too. */
-function createGlare(points: { p: THREE.Vector3; axis: THREE.Vector3; size: number; strength: number }[]): THREE.Points {
+interface Glare extends Lamp { size: number; strength: number; cutoff: number }
+
+/**
+ * Glare sprites: brighter and larger when the camera looks into the lamp's beam, gone when the lamp is seen from
+ * further off its beam than `cutoff` (cosine). Works in the floor reflection too.
+ */
+function createGlare(points: Glare[]): THREE.Points {
   const geometry = new THREE.BufferGeometry().setFromPoints(points.map(({ p }) => p));
   geometry.setAttribute("axis", new THREE.Float32BufferAttribute(points.flatMap(({ axis }) => axis.toArray()), 3));
   geometry.setAttribute("size", new THREE.Float32BufferAttribute(points.map(({ size }) => size), 1));
   geometry.setAttribute("strength", new THREE.Float32BufferAttribute(points.map(({ strength }) => strength), 1));
+  geometry.setAttribute("cutoff", new THREE.Float32BufferAttribute(points.map(({ cutoff }) => cutoff), 1));
   const uniforms = { map: { value: glareTexture() }, scale: { value: 360 } };
   const material = new THREE.ShaderMaterial({
     uniforms,
     vertexShader: /* glsl */ `
-      attribute vec3 axis; attribute float size; attribute float strength;
+      attribute vec3 axis; attribute float size; attribute float strength; attribute float cutoff;
       uniform float scale;
       varying float vStrength;
       void main() {
@@ -81,7 +88,7 @@ function createGlare(points: { p: THREE.Vector3; axis: THREE.Vector3; size: numb
         vec3 toCamera = normalize(cameraPosition - world.xyz);
         float along = dot(toCamera, axis);
         float facing = smoothstep(0.35, 1.0, along);                 // 1 = looking straight into the beam
-        vStrength = strength * (0.4 + 0.6 * facing) * smoothstep(-0.1, 0.25, along);   // none from behind the lamp
+        vStrength = strength * (0.4 + 0.6 * facing) * smoothstep(cutoff, cutoff + 0.35, along);   // none from behind or beside the lamp
         gl_PointSize = min(size * (0.75 + 0.5 * facing) * scale / -(viewMatrix * world).z, 256.0);
         // drawn a little towards the camera (same spot on screen) so the ceiling around the lamp never cuts the glow
         world.xyz += toCamera * min(size * 0.5 / max(abs(along), 0.2), 1.0);
@@ -111,17 +118,23 @@ export function addCeilingLights(root: THREE.Object3D, brightness = 1): THREE.Gr
   root.updateMatrixWorld(true);
   const group = new THREE.Group();
   group.name = "ceiling_lights";
-  const glare: { p: THREE.Vector3; axis: THREE.Vector3; size: number; strength: number }[] = [];
+  const glare: Glare[] = [];
+  const lens = new THREE.MeshBasicMaterial({ map: lensTexture(), toneMapped: false });
   let downlights: THREE.Vector3[] = [];
   for (const f of FITTINGS) {
     const mesh = root.getObjectByName(f.name) as THREE.Mesh | undefined;
     if (!mesh) continue;
-    const found = lamps(mesh);
-    found.forEach(({ p, axis }) => glare.push({ p: p.clone().addScaledVector(axis, 0.02), axis, size: f.glare, strength: f.strength * brightness }));
+    let found = lamps(mesh);
     if (f.name === "downlight_fixtures") {
       downlights = found.map(({ p }) => p);
       mesh.visible = false;                                      // replaced by the detailed lamps below
+    } else {
+      const track = createTrackLights(root, found, lens);       // detailed rails and spots, lenses in their new heads
+      group.add(track.group);
+      found = track.lenses;
+      mesh.removeFromParent();
     }
+    found.forEach(({ p, axis }) => glare.push({ p: p.clone().addScaledVector(axis, 0.02), axis, size: f.glare, strength: f.strength * brightness, cutoff: f.cutoff }));
   }
   if (!glare.length) return group;
 
@@ -130,10 +143,10 @@ export function addCeilingLights(root: THREE.Object3D, brightness = 1): THREE.Gr
     const trim = new THREE.LatheGeometry([
       [0.046, 0.0], [0.047, -0.004], [0.052, -0.007], [0.064, -0.008], [0.072, -0.006], [0.0765, -0.002], [0.077, 0.0],
     ].map(([r, y]) => new THREE.Vector2(r, y)), 48);
-    const lens = new THREE.CircleGeometry(0.047, 40).rotateX(Math.PI / 2).translate(0, -0.001, 0);
+    const disc = new THREE.CircleGeometry(0.047, 40).rotateX(Math.PI / 2).translate(0, -0.001, 0);
     const parts = [
       new THREE.InstancedMesh(trim, createGoldMaterial({ color: 0xf2dfc0, side: THREE.DoubleSide }), downlights.length),
-      new THREE.InstancedMesh(lens, new THREE.MeshBasicMaterial({ map: lensTexture(), toneMapped: false }), downlights.length),
+      new THREE.InstancedMesh(disc, lens, downlights.length),
     ];
     const m = new THREE.Matrix4();
     downlights.forEach((p, i) => parts.forEach((part) => part.setMatrixAt(i, m.makeTranslation(p.x, p.y, p.z))));

@@ -8,12 +8,14 @@
 | Crown moulding | `crown_cream` | none | cream |
 | Ceiling band, tray, cornice | `ceiling` | none | warm white |
 | Gold panel lines (walls, ceilings) | `gold_trim` | none | gilt gold, lit like the mouldings (vertex light) |
-| Track rails / spot heads | `track_black` / `track_white` | none | matte black / white |
+| Track rails / spot heads | `track_black` / `track_white` | none | plain shapes in the model; the web replaces them with satin-black rails and champagne-gold spots |
 | Spot lenses, niche LED strips | `led_glow` | none | warm white glow (unlit on the web) |
 | Downlight trims | `brass_soft` | none | brass (gold matcap on the web) |
 
 Textures: `assets-src/blender/textures/<id>/<id>_albedo_*.jpg`. The web uses albedo (TEXCOORD_0) × lightmap.
 
 Photo frames (web only, `web/src/frames/`): satin rose-gold metal, warm-white mat with a fine rose-gold bevel. The same frames in the collage.
+
+Track lights (web only, `web/src/lighting/trackLights.ts`): satin-black rails, adapters and yokes; champagne-gold heads, knobs and rail end caps (the gold of the downlight trims); black band and bezel; gold reflector around a warm lens.
 
 Light (baked): warm 2400 K white for the downlights, photo spots and wall wash, a soft warmer LED glow in the collage niche (the niche's back wall stays the same warm beige as the walls), a warm dusk sky through the doors. Levels and colours: `tools/bake/design.py` (`LEVEL`, `WARM_WHITE`).

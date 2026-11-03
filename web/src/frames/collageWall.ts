@@ -4,22 +4,22 @@ import { frameGeometry, frameMaterials } from "./photoFrame";
 import { FRAME_WIDTH } from "./sweep";
 
 /**
- * The collage in the backlit niche (heart room): the couple's photos as a mosaic in mixed sizes, each in exactly the
- * same frame as the single photos (rose-gold metal, warm-white mat, fine bevel), like a real gallery wall. No cast shadows:
- * the niche is lit from all sides, so the gaps between the frames show the clean warm wall.
- * Every gap between two frames is the same, the margin to the edge of the niche is the same on all four sides, and the
- * mosaic is centred. Photos keep their real aspect ratio and are never altered.
- * The arrangement is the best of a few thousand candidates (the same photos always give the same layout).
+ * The collage in the backlit niche (heart room): a gallery wall like a real home, each photo in exactly the same
+ * frame as the single photos (rose-gold metal, warm-white mat, fine bevel). No cast shadows: the niche is lit from all
+ * sides, so the gaps show the clean warm wall.
+ * Frames of different sizes are fitted together like a puzzle around the middle: no rows or columns, no big holes,
+ * the same small gap between neighbouring frames, the outline free and uneven, the whole wall centred in the niche.
+ * Photos keep their real aspect ratio and are never altered. The same photos always give the same layout.
  * One draw call per photo plus two for all frames and mats together.
  *
  * The group faces +Z, centred on the `collage_board` slot.
  */
 export interface CollageOptions {
   photos: THREE.Texture[];
-  width: number;      // area to fill (the niche opening), metres
+  width: number;      // area the wall may use (the niche opening), metres
   height: number;
   gap?: number;       // space between two frames
-  margin?: number;    // space between the mosaic and the edge of the area, the same on all sides
+  margin?: number;    // smallest space between the frames and the edge of the area
   seed?: number;      // another arrangement of the same photos
   light?: [number, number, number];   // baked light on the collage: the lit niche keeps the mats bright white
 }
@@ -27,85 +27,46 @@ export interface CollageOptions {
 const FRAME_SCALE = 0.75;                                  // the single photos' frame, a little slimmer for smaller photos
 const MAT = 0.035;                                         // mat width around each photo
 const PAD = MAT + FRAME_WIDTH * FRAME_SCALE;               // mat + frame on each side of a photo
-const CANDIDATES = 2000;                                   // random arrangements tried ...
-const POLISH = 400;                                        // ... then single splits of the best one flipped
-const MIN_SIDE = 0.16;                                     // no photo smaller than this (metres)
+const TRIES = 12;                                          // size mixes tried (the best-filling one is kept)
 
-/**
- * Mosaic as a tree of side-by-side ("row") and stacked ("column") pairs. Every node's outer width is a straight
- * function of its height, w = a·h + b, so a tree has exact sizes with identical gaps everywhere.
- */
-interface Node { a: number; b: number; row?: boolean; kids?: [Node, Node]; photo?: number }
 interface Placed { photo: number; x: number; y: number; w: number; h: number }   // outer frame rect, (x, y) = centre
 
-const leaf = (photo: number, aspect: number): Node => ({ a: aspect, b: 2 * PAD * (1 - aspect), photo });
-
-function pair(row: boolean, k1: Node, k2: Node, gap: number): Node {
-  if (row) return { a: k1.a + k2.a, b: k1.b + k2.b + gap, row, kids: [k1, k2] };
-  const a = 1 / (1 / k1.a + 1 / k2.a);
-  return { a, b: a * (k1.b / k1.a + k2.b / k2.a - gap), row, kids: [k1, k2] };
-}
-
-/** Random tree that tends to fit an area of the given aspect: wide areas split side by side, tall ones stack. */
-function grow(ids: number[], aspects: number[], aspect: number, gap: number, rnd: () => number): Node {
-  if (ids.length === 1) return leaf(ids[0], aspects[ids[0]]);
-  const row = rnd() < aspect ** 3 / (1 + aspect ** 3);
-  const n1 = THREE.MathUtils.clamp(Math.round(ids.length * (0.3 + 0.4 * rnd())), 1, ids.length - 1), share = n1 / ids.length;
-  const k1 = grow(ids.slice(0, n1), aspects, row ? aspect * share : aspect / share, gap, rnd);
-  const k2 = grow(ids.slice(n1), aspects, row ? aspect * (1 - share) : aspect / (1 - share), gap, rnd);
-  return pair(row, k1, k2, gap);
-}
-
-/** Recomputes a and b of every node of a tree after a split was flipped. */
-function refit(node: Node, gap: number) {
-  if (!node.kids) return;
-  refit(node.kids[0], gap); refit(node.kids[1], gap);
-  const p = pair(node.row!, node.kids[0], node.kids[1], gap);
-  node.a = p.a; node.b = p.b;
-}
-
-function splits(node: Node, out: Node[] = []): Node[] {
-  if (node.kids) { out.push(node); splits(node.kids[0], out); splits(node.kids[1], out); }
-  return out;
-}
-
-function place(node: Node, x: number, y: number, w: number, h: number, gap: number, out: Placed[]) {
-  if (node.photo !== undefined) { out.push({ photo: node.photo, x: x + w / 2, y: y - h / 2, w, h }); return; }
-  const [k1, k2] = node.kids!;
-  if (node.row) {
-    const w1 = k1.a * h + k1.b;
-    place(k1, x, y, w1, h, gap, out);
-    place(k2, x + w1 + gap, y, w - w1 - gap, h, gap, out);
-  } else {
-    const h1 = (w - k1.b) / k1.a;
-    place(k1, x, y, w, h1, gap, out);
-    place(k2, x, y - h1 - gap, w, h - h1 - gap, gap, out);
-  }
-}
-
-/** Sizes the tree into the area (an equal margin all round when the shapes allow it) and scores the result. */
-function evaluate(root: Node, width: number, height: number, gap: number, margin: number) {
-  const m = (root.a * height + root.b - width) / (2 * (root.a - 1));       // margin that fits both sides exactly
-  const exact = Number.isFinite(m) && m >= margin * 0.75 && m <= margin * 1.5;
-  let w: number, h: number;
-  if (exact) { w = width - 2 * m; h = height - 2 * m; } else {
-    h = Math.min(height - 2 * margin, (width - 2 * margin - root.b) / root.a); w = root.a * h + root.b;
-  }
+/**
+ * Packs frames (photo sizes × scale) around the middle, biggest first: each new frame goes to the free spot next to an
+ * already hung frame (exactly `gap` away, lined up with its top, middle or bottom / left, centre or right) that is
+ * closest to the middle of the area. Returns the frames centred on the origin.
+ */
+function pack(sizes: [number, number][], order: number[], scale: number, gap: number, width: number, height: number): Placed[] {
   const placed: Placed[] = [];
-  place(root, -w / 2, h / 2, w, h, gap, placed);
-  const areas = placed.map((p) => Math.max(1e-6, Math.max(0, p.w - 2 * PAD) * Math.max(0, p.h - 2 * PAD)));
-  const logs = areas.map(Math.log), mean = logs.reduce((s, v) => s + v, 0) / logs.length;
-  const spread = Math.sqrt(logs.reduce((s, v) => s + (v - mean) ** 2, 0) / logs.length);
-  const hero = placed[areas.indexOf(Math.max(...areas))];
-  let cost = exact ? 2 * Math.abs(m - margin) / margin : 3 + (1 - (w * h) / ((width - 2 * margin) * (height - 2 * margin)));
-  const variety = THREE.MathUtils.clamp(0.45 - placed.length / 150, 0.2, 0.4);   // mixed sizes; calmer with many photos
-  cost += placed.length > 2 ? 3 * (spread - variety) ** 2 : 0;
-  cost += Math.max(...areas) / Math.min(...areas) > 6 ? 1 : 0;              // no tiny photos next to huge ones
-  cost += 0.6 * (Math.abs(hero.x) / w + Math.abs(hero.y) / h);              // the largest photo near the centre
-  const smallest = Math.min(...placed.map((p) => Math.min(p.w, p.h) - 2 * PAD));
-  if (smallest < MIN_SIDE) cost += 10 + 100 * (MIN_SIDE - smallest);         // far too many photos: least-bad layout
-  return { cost, placed };
+  const free = (x: number, y: number, w: number, h: number) =>
+    placed.every((p) => Math.abs(p.x - x) >= (p.w + w) / 2 + gap - 1e-6 || Math.abs(p.y - y) >= (p.h + h) / 2 + gap - 1e-6);
+  for (const id of order) {
+    const w = sizes[id][0] * scale + 2 * PAD, h = sizes[id][1] * scale + 2 * PAD;
+    if (!placed.length) { placed.push({ photo: id, x: 0, y: 0, w, h }); continue; }
+    let best: [number, number] = [0, 0], bestScore = Infinity;
+    for (const p of placed) {
+      const ex = (p.w + w) / 2 + gap, ey = (p.h + h) / 2 + gap;
+      const ys = [p.y, p.y + (p.h - h) / 2, p.y - (p.h - h) / 2], xs = [p.x, p.x + (p.w - w) / 2, p.x - (p.w - w) / 2];
+      const spots: [number, number][] = [
+        ...ys.map((y) => [p.x + ex, y] as [number, number]), ...ys.map((y) => [p.x - ex, y] as [number, number]),
+        ...xs.map((x) => [x, p.y + ey] as [number, number]), ...xs.map((x) => [x, p.y - ey] as [number, number]),
+      ];
+      for (const [x, y] of spots) {
+        const score = (x / width) ** 2 + (y / height) ** 2;   // closest to the middle, in the shape of the niche
+        if (score < bestScore && free(x, y, w, h)) { bestScore = score; best = [x, y]; }
+      }
+    }
+    placed.push({ photo: id, x: best[0], y: best[1], w, h });
+  }
+  const x0 = Math.min(...placed.map((p) => p.x - p.w / 2)), x1 = Math.max(...placed.map((p) => p.x + p.w / 2));
+  const y0 = Math.min(...placed.map((p) => p.y - p.h / 2)), y1 = Math.max(...placed.map((p) => p.y + p.h / 2));
+  placed.forEach((p) => { p.x -= (x0 + x1) / 2; p.y -= (y0 + y1) / 2; });
+  return placed;
 }
+
+const extent = (placed: Placed[]) => ({
+  w: Math.max(...placed.map((p) => p.x + p.w / 2)) * 2, h: Math.max(...placed.map((p) => p.y + p.h / 2)) * 2,
+});
 
 const aspectOf = (t: THREE.Texture) => {
   const img = t.image as { width?: number; height?: number } | undefined;
@@ -118,21 +79,22 @@ export function createCollageWall({ photos, width, height, gap = 0.05, margin = 
   const aspects = photos.map(aspectOf);
   let s = (Math.floor(Math.abs(seed)) % 2147483646) + 1;
   const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  const W = width - 2 * margin, H = height - 2 * margin;
 
-  let best: Placed[] = [], bestCost = Infinity, bestTree: Node | null = null;
-  for (let i = 0; i < CANDIDATES; i++) {
-    const ids = aspects.map((_, k) => k);
-    for (let k = ids.length - 1; k > 0; k--) { const j = Math.floor(rnd() * (k + 1)); [ids[k], ids[j]] = [ids[j], ids[k]]; }
-    const tree = grow(ids, aspects, width / height, gap, rnd);
-    const { cost, placed } = evaluate(tree, width, height, gap, margin);
-    if (cost < bestCost) { bestCost = cost; best = placed; bestTree = tree; }
-  }
-  const inner = bestTree ? splits(bestTree) : [];
-  for (let i = 0; i < POLISH && inner.length; i++) {                         // fine-tune: flip one split, keep it if better
-    const node = inner[Math.floor(rnd() * inner.length)];
-    node.row = !node.row; refit(bestTree!, gap);
-    const { cost, placed } = evaluate(bestTree!, width, height, gap, margin);
-    if (cost < bestCost) { bestCost = cost; best = placed; } else { node.row = !node.row; refit(bestTree!, gap); }
+  let best: Placed[] = [], bestFill = -1;
+  for (let t = 0; t < TRIES; t++) {
+    // a mix of sizes: a few large, most medium, some small (relative photo area 0.55–1.6)
+    const areas = aspects.map(() => [0.55, 0.8, 1, 1, 1.25, 1.6][Math.floor(rnd() * 6)]);
+    const sizes = aspects.map((a, i) => [Math.sqrt(areas[i] * a), Math.sqrt(areas[i] / a)] as [number, number]);
+    const order = aspects.map((_, i) => i).sort((a, b) => areas[b] - areas[a] || a - b);
+    let lo = 0, hi = Math.max(W, H);                       // largest photo scale whose wall fits the niche
+    for (let i = 0; i < 16; i++) {
+      const mid = (lo + hi) / 2, e = extent(pack(sizes, order, mid, gap, W, H));
+      if (e.w <= W && e.h <= H) lo = mid; else hi = mid;
+    }
+    const placed = pack(sizes, order, lo, gap, W, H);
+    const fill = placed.reduce((sum, p) => sum + p.w * p.h, 0);
+    if (fill > bestFill) { bestFill = fill; best = placed; }
   }
 
   const materials = frameMaterials();
