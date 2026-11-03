@@ -4,17 +4,15 @@ import { CapsuleCollider, RigidBody, useBeforePhysicsStep, useRapier, type Rapie
 import type { Collider, KinematicCharacterController } from '@dimforge/rapier3d-compat'
 import { Color, Vector3, type Group, type MeshBasicMaterial } from 'three'
 import { MOVEMENT, PHYSICS, PLAYER } from '../config/gameFeel'
-import { LIGHTING } from '../config/lighting'
 import { resetLook } from '../input/input'
-import { damp, dampAngle } from '../lib/smoothing'
+import { dampAngle } from '../lib/smoothing'
 import { useWalk } from '../store'
-import { floorLightAt } from '../world/floorLight'
 import { GARDEN, roomAt } from '../world/rooms'
 import { cameraYaw, resetRig, updateCamera } from './cameraRig'
 import { fadeOpacity, setOpacity } from './fade'
 import { CAPSULE_CENTER, createController, newMoveState, stepMovement } from './movement'
 
-// Unlit albedo of the capsule and its nose; the baked floor light tints them.
+// Unlit colours of the capsule and its nose.
 const ALBEDO = [new Color('#e9a6a0'), new Color('#5a3b36')]
 
 /**
@@ -29,8 +27,6 @@ export function Player() {
   const collider = useRef<Collider>(null)
   const visual = useRef<Group>(null)
   const materials = useRef<MeshBasicMaterial[]>([])
-  const light = useRef<Color | null>(null) // smoothed floor light under the feet
-  const floorLight = useRef(new Color())
   const controller = useRef<KinematicCharacterController | null>(null)
   const state = useRef(newMoveState())
   const opacity = useRef(1)
@@ -85,12 +81,6 @@ export function Player() {
     const aspect = frame.size.width / frame.size.height
     const motion = state.current.motion
     const dist = updateCamera(frame.camera, feet.current, motion, MOVEMENT.walkSpeed, rapierCtx, col, b, aspect, dt)
-
-    if (floorLightAt(feet.current, floorLight.current)) {
-      if (light.current) light.current.lerp(floorLight.current, damp(LIGHTING.characterTintTime, dt))
-      else light.current = floorLight.current.clone()
-      materials.current.forEach((m, i) => m.color.copy(ALBEDO[i]).multiply(light.current!))
-    }
 
     opacity.current = fadeOpacity(opacity.current, dist, dt)
     setOpacity(materials.current, opacity.current)

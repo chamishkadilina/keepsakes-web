@@ -12,6 +12,10 @@ html, body, #root {
 }
 #root { height: 100dvh; position: relative; }
 canvas { touch-action: none; display: block; }
+.vignette {
+  position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 48%, rgba(0,0,0,0) 55%, rgba(30,18,10,0.35) 100%);
+}
 
 .controls { position: absolute; inset: 0; touch-action: none; }
 .joystick-ring, .joystick-knob {

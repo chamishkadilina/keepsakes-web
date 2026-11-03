@@ -1,6 +1,6 @@
 import { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
-import { AgXToneMapping } from 'three'
+import { AgXToneMapping, SRGBColorSpace } from 'three'
 import { Physics } from '@react-three/rapier'
 import { CAMERA, PHYSICS } from './config/gameFeel'
 import { LIGHTING } from './config/lighting'
@@ -25,19 +25,23 @@ export function App() {
           powerPreference: 'high-performance',
           toneMapping: AgXToneMapping,
           toneMappingExposure: LIGHTING.exposure,
+          outputColorSpace: SRGBColorSpace,
         }}
       >
         <VsyncFrameLoop />
-        {/* No lights anywhere: all light is baked (design/lighting.md). */}
+        {/* No lights and no post-processing: all light is baked (design/lighting.md). */}
         <color attach="background" args={LIGHTING.sky} />
         <Suspense fallback={null}>
           {/* Steps before default useFrames (priority 0), so the camera sees this frame's interpolated player. */}
           <Physics timeStep={PHYSICS.timeStep} interpolate updatePriority={-1}>
-            <Museum />
+            {/* Player first: its camera update runs before the museum's floor reflection each frame. */}
             <Player />
+            <Museum />
           </Physics>
         </Suspense>
       </Canvas>
+      {/* Soft dark corners: a CSS overlay, so no shader ever touches the photos. */}
+      <div className="vignette" />
       <Controls />
       <Hud />
       <Loading />

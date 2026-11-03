@@ -1,14 +1,15 @@
-# Lighting bake (helper scripts)
+# Museum bake pipeline
 
-Mechanical tools that turn the lights in `museum.blend` into web lightmaps. They never change the design.
+Mechanical tools: they never change the approved room layout. `pipeline.sh` runs everything (see its header).
 
-`romantic.py in.blend out.blend 50 160` sets the romantic palette and light levels (ambient W, spot W).
+| Step | Script | What it does |
+|---|---|---|
+| textures | `grade_textures.py`, `floor_synth.py`, `plank_variation.py`, `floor_tone.py` | grade the Poly Haven textures (cream-beige paint), rebuild the floor as random-length boards (2k, 2.2 m tile), tone it dark walnut-cherry. Already done: the results are in `assets-src/blender/textures/` |
+| look | `design.py` | palette, tray ceilings with cornice + gold lines, a few downlights, track spots sized to every photo, collage niche with LEDs, gold wall panels, soft wall wash. Light colours and levels at the top (`WARM_WHITE`, `LEVEL`) |
+| bake | `bake_lightmaps.py` | Cycles bake of walls, floors, ceilings, garden walls (light only, no colour) |
+| encode | `finish_lightmaps.py` | denoise, PNG lightmaps + `lightmaps.json`, `light_rgb` on every photo slot |
+| trim | `bake_trim_vertex.py`, `smooth_trim_light.py` | light for mouldings, cornices and the niche, baked into vertex colours |
+| check | `check_lightmaps.py` | quick render of the baked result |
+| export | `export_glb.py` | museum.glb (custom properties on, lights off, vertex colours on) |
 
-Run order (Blender 5.2 Python + numpy, scipy, pillow):
-1. `lightmap_uvs.py in.blend uv.blend`: second UV map "lightmap" for walls, floors, ceilings, garden walls, trim
-2. `fix_trim_uv.py uv.blend uv2.blend`: splits skirting/jambs so their lightmap islands are not too thin
-3. `bake_lightmaps.py uv2.blend lm/ 192`: Cycles bake → `lm/lm_<group>.exr`
-4. `finish_lightmaps.py uv2.blend lm/ web/public/models out.blend`: denoise, encode PNGs + `lightmaps.json`, store `light_rgb` on every slot
-5. `check_lightmaps.py out.blend web/public/models/lightmaps design/lighting-reference`: renders with lightmaps only (how the web should look)
-
-Re-bake after any change to walls, lights or static assets.
+If you change the layout in Blender, edit `assets-src/blender/museum_base.blend` and run the pipeline again (~20 min on 2 CPU cores).

@@ -1,12 +1,12 @@
 {
- "intensity": 0.9722,
+ "intensity": 2.2195,
  "uv": "lightmap (TEXCOORD_1)",
  "colorSpace": "srgb",
  "flipY": false,
  "maps": {
   "ceilings": {
    "file": "lm_ceilings.png",
-   "size": 512,
+   "size": 1024,
    "objects": [
     "ceiling_foyer",
     "ceiling_heart_room",
@@ -33,14 +33,6 @@
    "size": 512,
    "objects": [
     "garden_walls"
-   ]
-  },
-  "trim": {
-   "file": "lm_trim.png",
-   "size": 1024,
-   "objects": [
-    "door_jambs",
-    "skirting"
    ]
   },
   "walls": {

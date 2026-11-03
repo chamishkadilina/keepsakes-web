@@ -1,58 +1,84 @@
-# Lighting — baked, identical on every device
+# Look and lighting — final gallery
 
-Mood: **bright and romantic.** Blush-ivory walls, warm cream ceilings, honey wood, soft rosy fill light, warm-white spotlights that make each photo the focal point, and a pink-violet twilight sky over the garden.
+Target: the owner's final reference video (`design/reference-final/*.png`, frames from it), lit like a real gallery at night:
 
-All museum light is calculated once in Blender (Cycles) and stored in **lightmaps**. The web draws that stored light; it never calculates lights.
+- warm cream-beige plain walls, tall cream skirting, thin gold panel lines on the gallery walls
+- cream tray ceilings with a small cornice and gold lines, a few recessed downlights
+- black track rails with white spot heads: every photo sits in its own soft pool of light, brightest just above the frame
+- every photo in a slim modern rose-gold frame with a wide warm-white mat and a fine rose-gold bevel (fresh and romantic, not antique); the frame casts a soft shadow on the wall below it (no picture-light bars)
+- the heart room's back wall: a softly backlit niche (its back wall the same warm beige as the walls) with the collage: a centred mosaic of mixed sizes in exactly the same frames, equal gaps everywhere
+- glossy dark walnut-cherry floor with soft reflections of the lights; red and blush-pink rose petals and a few roses along the path that scatter when you walk through them
+- no plants (the owner will add real assets later), no fairy lights, no sconces, no picture lights
 
-Result: the same look on phone, tablet and desktop; no lag, no heat.
+**The web must look like `design/web-reference/*.png`.** Those screenshots were rendered in a real browser (three.js r170) with the drop-in code below.
 
-## Rules (do not break)
+## The museum file
 
-1. **No real-time lights** in the web: no SpotLight, PointLight, DirectionalLight, HemisphereLight, no shadows. Lights exported in museum.glb (if any) are removed on load.
-2. **Identical everywhere.** No quality tiers that change lights, materials or effects. The only thing allowed to adapt is render resolution (pixel ratio), to keep the frame rate.
-3. Tone mapping: `AgXToneMapping`, exposure 1.0, output sRGB. Compare against `design/lighting-reference/baked-*.png` (those images were rendered from the lightmaps only, exactly as the web should draw them).
+`web/public/models/museum.glb` and `web/public/models/lightmaps/` are shipped **ready-made and browser-tested**. Do not re-export from Blender unless the model changes.
 
-## Files
+## Rules
 
-- `web/public/models/museum.glb`: static meshes have **two UV sets**. `TEXCOORD_0` is for surface textures (1 unit = 1 m) and `TEXCOORD_1` is the lightmap UV.
-- Each static mesh has the extra (custom property) `lightmap_group`: `walls`, `floors`, `ceilings`, `garden_walls` or `trim`.
-- `web/public/models/lightmaps/lm_<group>.png`: one lightmap per group (sRGB, 8-bit).
-- `web/public/models/lightmaps/lightmaps.json`:
-  ```json
-  { "intensity": 0.29, "maps": { "walls": { "file": "lm_walls.png", "objects": ["walls"] }, ... } }
-  ```
+1. **No real-time lights or shadows.** All light is baked in Blender. Identical on every device; only the pixel ratio may adapt for speed.
+2. **Never change the couple's photos.** Photo materials: `MeshBasicMaterial`, `map` = photo (sRGB), white colour, `toneMapped: false`. Never crop or stretch a photo: frames take the photo's own aspect ratio. No post-processing pass may touch photos.
+3. **No post-processing composer.** Render the scene directly so tone mapping stays per-material (room = AgX, photos = untouched).
 
-## How to draw a static mesh
+## Renderer
 
+```ts
+gl.outputColorSpace = THREE.SRGBColorSpace;
+gl.toneMapping = THREE.AgXToneMapping;      // tested against Neutral: AgX matches the reference
+gl.toneMappingExposure = 1;
+// <Canvas gl={{ antialias: true }} dpr={[1, 2]}>  — antialiasing on, everywhere
 ```
-final colour = albedo × lightmap_linear × intensity
+
+Soft vignette overlay (absolutely positioned over the canvas, `pointer-events: none`):
+
+```css
+background: radial-gradient(ellipse at 50% 48%, rgba(0,0,0,0) 55%, rgba(30,18,10,0.35) 100%);
 ```
 
-- Material: `MeshBasicMaterial` (cheapest, no light maths).
-  - `color` / `map` = the glTF base colour / base colour texture (albedo).
-  - `lightMap` = lm_<group>.png with `colorSpace = SRGBColorSpace`, `flipY = false`, `channel = 1` (TEXCOORD_1).
-  - `lightMapIntensity` = `intensity`. Check how your three.js version's MeshBasicMaterial applies the lightmap: if it multiplies by `RECIPROCAL_PI`, use `intensity × Math.PI`.
-- Lightmap textures: linear filtering, mipmaps on, anisotropy 4.
-- Emissive meshes (`ceiling_light_glow`): `MeshBasicMaterial` with the emissive colour.
+## Drop-in code (tested, use as-is)
 
-## Photos and frames (built in code)
+After loading `museum.glb`, in this order:
 
-**The couple's photos are never changed.** Every photo is shown exactly as uploaded: same colours, brightness and contrast, in every room and on every device.
+```ts
+await applyBakedLighting(gltf.scene, "/models/lightmaps");   // lighting/bakedLighting.ts
+addCeilingLights(gltf.scene);                                 // lighting/ceilingLights.ts
+const petals = createRosePetals(path);                        // decor/rosePetals.ts
+scene.add(petals);
+useFrame(({ camera }, delta) => petals.update(camera.position, delta));   // petals move around the visitor's feet
 
-- Photo: `MeshBasicMaterial`, `map` = photo (`colorSpace = SRGBColorSpace`), `color` = white, **`toneMapped = false`**, no fog, no post-processing on it, no light tint. This keeps the pixels 1:1 with the original file.
-- Photo texture quality: mipmaps on, anisotropy 8, never compressed below the uploaded quality.
+// photos in the single frames (slot_frame_*)
+const size = new THREE.Box3().setFromObject(slot).getSize(new THREE.Vector3());          // slot size in metres
+const { width, height } = photoSizeForSlot(photo.image.width / photo.image.height, Math.max(size.x, size.y, size.z));
+const frame = createPhotoFrame({ photo, width, height, light: slot.userData.light_rgb });  // frames/photoFrame.ts
+// the frame faces +Z with its back at z = 0: put it where the slot is, facing out of the wall
 
-Every slot in the glb has the extra `light_rgb` = the light (linear RGB) falling on that spot of the wall. It is used **only for the frame around the photo**, so frames sit naturally in the room:
+// the collage niche: all collage photos, any number. 5.28 m × 3.04 m = the niche opening
+const collage = createCollageWall({ photos, width: 5.28, height: 3.04 });                // frames/collageWall.ts
+// faces +Z, centred on collage_board. The placeholders (slot_*, collage_board) are hidden by applyBakedLighting.
 
-- Mat (white border): `MeshBasicMaterial`, colour white × `light_rgb`.
-- Gold moulding: `MeshMatcapMaterial` with a warm gold matcap generated in code (canvas gradient, no downloaded file), `color` = `light_rgb` normalised so the brightest slot = 1. It looks metallic with no lights.
-- The collage board's frame and backing use the same `light_rgb` rule; the collage photos follow the photo rule (exact colours).
-- Screen slideshow: the same photo rule (exact colours, `toneMapped = false`).
+const floors: THREE.Mesh[] = [];
+gltf.scene.traverse((o) => { if ((o as THREE.Mesh).isMesh && o.name.startsWith("floor_") && o.name !== "floor_6_garden") floors.push(o as THREE.Mesh); });
+const reflection = createFloorReflection(gl, scene, floors);  // lighting/floorReflection.ts
+useFrame(({ camera }) => reflection.update(camera));          // runs before R3F renders the frame
+```
 
-## Characters
+- `bakedLighting.ts`: walls / floors / ceilings (albedo × lightmap, uv1, intensity × π), mouldings, tray cornices, the niche and the gold lines (vertex colours: lit like the room around them), spot lenses and niche LEDs (warm glow), track lights (shaded in their colour). Removes any exported lights. Logs an error if nothing got light (wrong path).
+- `ceilingLights.ts`: recessed downlights (gold trim, deep reflector, hot lens) over the plain discs in the model, and a soft glare on every downlight and spot lens that grows when you look into the beam, like real lamps. Also glints in the floor reflection. 3 draw calls in total.
+- `floorReflection.ts`: soft glossy reflections on the wood floor (`strength`, `roughness`). One extra low-resolution render of the (unlit, cheap) scene per frame. Objects with `userData.noReflection = true` are skipped (petals).
+- `matcaps.ts`: polished gold (lamp trims), satin rose gold (photo frames) and a soft neutral shading, drawn in code.
+- `photoFrame.ts`: slim rose-gold metal frame (flat face, softly rounded edges, 2.5–3.75 cm wide), wide warm-white mat (shown as it is, like the photo, so it stays clean white) with a fine rose-gold bevel, and the soft shadow the frame casts under the ceiling spot. 4 draw calls per frame.
+- `collageWall.ts`: mosaic of mixed sizes, every photo in exactly the same frame as the single photos (a little slimmer, as they are smaller): the same gap between every two frames (`gap`, 5 cm), the same margin to the niche on all four sides (`margin`, ~10 cm), centred, the largest photo near the middle. Photos keep their aspect ratio. The same photos always give the same layout (`seed` gives another arrangement). Laid out once when it is created (well under 0.1 s); no cast shadows in the lit niche, so the gaps show the clean warm wall; 2 draw calls for all frames and mats plus one per photo.
+- `rosePetals.ts`: `path` = floor points along the walking route (`[x, z]`, three.js coordinates). ~300 petals + 14 roses for the whole museum. `update()` each frame: petals within ~45 cm of the visitor's feet are swept aside, hop a few centimetres, spin and settle flat again; roses roll a little. Only nearby petals move (~0.03 ms per frame), and none drift more than 80 cm from where they were laid.
 
-Sample the floor lightmap under the player's feet (read `lm_floors.png` once into an ImageData, look up the TEXCOORD_1 of the floor point under the player) and tint the character's `MeshBasicMaterial`/matcap with it, smoothed over ~0.3 s. Walking from a dark doorway into a lit room then feels natural.
+## Performance (measured)
 
-## Changing the lighting
+Busiest view: ~130 draw calls and ~120k triangles including the reflection pass (phone portrait views: 45–60 draw calls). Everything is unlit (baked / matcap), so phones stay cool. If a phone struggles: `createFloorReflection(..., { resolution: 0.25 })` first, then `dpr={[1, 1.5]}`.
 
-Only in Blender: change the lights in the `lights` collection, then re-bake. The bake scripts write new lightmaps and `light_rgb` values; the web picks them up with no code change.
+## Remove from earlier versions
+
+- `createPhotoFrame`'s `pictureLight` option is gone (no picture lights anywhere): remove it from every call.
+- `createCollageWall`: use the niche opening size above (`width: 5.28, height: 3.04`), not the old 4.9 × 2.9.
+- `web/src/decor/fairyLights.ts`, `web/src/lighting/moods.ts`, `web/src/lighting/lightGlows.ts`, `web/src/lighting/goldMatcap.ts` (now `matcaps.ts`), `web/public/models/fairy_lights.json`, `web/public/models/moods.json`, and every use of them.
+- In `tools/bake/`: `design_v20.py`, `grade_textures_v20.py`, `regrade_light.py` (replaced by `design.py`, `grade_textures.py`, `floor_tone.py`).

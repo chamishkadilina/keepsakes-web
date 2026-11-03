@@ -9,11 +9,11 @@ src, dst = sys.argv[1], sys.argv[2]
 bpy.ops.wm.open_mainfile(filepath=src)
 
 GROUPS = {   # bake group -> objects (one lightmap image per group)
-    "walls": ["walls"],
+    "walls": [n for n in ("walls", "partition_cap") if n in bpy.data.objects],
     "floors": [o.name for o in bpy.data.collections["floors"].objects],
     "ceilings": [o.name for o in bpy.data.objects if o.name.startswith("ceiling_") and o.name not in ("ceiling_light_fixtures", "ceiling_light_glow")],
     "garden_walls": ["garden_walls"],
-    "trim": ["skirting", "door_jambs"],
+    "trim": [n for n in ("skirting", "door_jambs", "chair_rail", "crown_moulding", "boiserie") if n in bpy.data.objects],
 }
 
 # 1. walls: drop the empty material slot so every face uses the wall material

@@ -6,7 +6,7 @@ import bpy, sys, time
 src, outdir, samples = sys.argv[1], sys.argv[2], int(sys.argv[3])
 scale = float(sys.argv[4]) if len(sys.argv) > 4 else 1.0
 only = sys.argv[5].split(",") if len(sys.argv) > 5 else None   # bake just these groups
-RES = {"walls": 2048, "floors": 1024, "ceilings": 512, "garden_walls": 512, "trim": 1024}
+RES = {"walls": 2048, "floors": 1024, "ceilings": 1024, "garden_walls": 512, "trim": 2048}
 RES = {k: max(64, int(v * scale)) for k, v in RES.items()}
 
 bpy.ops.wm.open_mainfile(filepath=src)
@@ -18,11 +18,15 @@ sc.cycles.transmission_bounces = 0; sc.cycles.volume_bounces = 0
 sc.render.bake.margin = 12; sc.render.bake.margin_type = "EXTEND"
 sc.render.bake.use_pass_direct = True; sc.render.bake.use_pass_indirect = True; sc.render.bake.use_pass_color = False
 
-SKY = (0.62, 0.42, 0.55, 1)   # romantic pink-violet twilight
+SKY = (*sc.get("sky_colour", (0.58, 0.5, 0.44)), 1)    # warm dusk (set by design.py)
 # twilight sky (lights the garden and spills softly through the doors)
 w = bpy.data.worlds.new("bake_sky"); sc.world = w; w.use_nodes = True
 bg = w.node_tree.nodes["Background"]; bg.inputs[0].default_value = SKY; bg.inputs[1].default_value = 1.0
 
+
+# bake-only roof: sky light may enter only through doors and the garden, never over the wall tops
+_rm = bpy.data.meshes.new("_bake_roof"); _rm.from_pydata([(-1, -1, 4.62), (39, -1, 4.62), (39, 22, 4.62), (-1, 22, 4.62)], [], [(0, 1, 2, 3)])
+_roof = bpy.data.objects.new("_bake_roof", _rm); bpy.context.scene.collection.objects.link(_roof)
 # photo slots must not cast shadows into the bake (the web builds frames later)
 for o in bpy.data.collections["frames_slots"].objects:
     o.hide_render = True
