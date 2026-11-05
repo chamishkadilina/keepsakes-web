@@ -42,8 +42,8 @@ export function stopLookInertia() {
   input.pitchSpeed = 0
 }
 
-export function resetLook() {
-  input.yaw = 0
+export function resetLook(yaw: number) {
+  input.yaw = yaw
   input.pitch = CAMERA.pitchDefault
   input.lastLookAt = -Infinity
   stopLookInertia()

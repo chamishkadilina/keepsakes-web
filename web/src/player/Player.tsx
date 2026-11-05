@@ -2,11 +2,11 @@ import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { CapsuleCollider, RigidBody, useBeforePhysicsStep, useRapier, type RapierRigidBody } from '@react-three/rapier'
 import type { Collider, KinematicCharacterController } from '@dimforge/rapier3d-compat'
-import { Color, Vector3, type Group, type MeshBasicMaterial } from 'three'
+import { Color, type Group, type MeshBasicMaterial } from 'three'
 import { MOVEMENT, PHYSICS, PLAYER } from '../config/gameFeel'
 import { resetLook } from '../input/input'
 import { dampAngle } from '../lib/smoothing'
-import { useWalk } from '../store'
+import { useWalk, visitorFeet } from '../store'
 import { GARDEN, roomAt } from '../world/rooms'
 import { cameraYaw, resetRig, updateCamera } from './cameraRig'
 import { fadeOpacity, setOpacity } from './fade'
@@ -30,8 +30,7 @@ export function Player() {
   const controller = useRef<KinematicCharacterController | null>(null)
   const state = useRef(newMoveState())
   const opacity = useRef(1)
-  const feet = useRef(new Vector3())
-  const { loaded, spawn, resetCount } = useWalk()
+  const { loaded, spawn, spawnYaw, resetCount } = useWalk()
 
   useEffect(() => {
     const c = createController(world)
@@ -39,16 +38,16 @@ export function Player() {
     return () => world.removeCharacterController(c)
   }, [world])
 
-  // Place at spawn_her on load and on Restart, facing into the foyer (north).
+  // Place at spawn_her on load and on Restart, facing the title wall.
   useEffect(() => {
     const p = { x: spawn[0], y: spawn[1] + CAPSULE_CENTER + MOVEMENT.skin, z: spawn[2] }
     body.current?.setTranslation(p, true)
     body.current?.setNextKinematicTranslation(p)
-    state.current = newMoveState()
-    if (visual.current) visual.current.rotation.y = 0
-    resetLook()
+    state.current = { ...newMoveState(), heading: spawnYaw }
+    if (visual.current) visual.current.rotation.y = spawnYaw
+    resetLook(spawnYaw)
     resetRig()
-  }, [loaded, spawn, resetCount])
+  }, [loaded, spawn, spawnYaw, resetCount])
 
   useBeforePhysicsStep((w) => {
     const b = body.current
@@ -56,10 +55,10 @@ export function Player() {
     const c = controller.current
     if (!b || !col || !c) return
     const dt = Math.min(w.timestep, PHYSICS.maxDelta)
-    const next = stepMovement(state.current, c, world, rapier, col, b, cameraYaw(), dt)
+    const walk = useWalk.getState()
+    const next = stepMovement(state.current, c, world, rapier, col, b, cameraYaw(), walk.footprints, dt)
     b.setNextKinematicTranslation(next)
 
-    const walk = useWalk.getState()
     if (state.current.moved) walk.start()
     const room = roomAt(next.x, next.z)
     walk.setRoom(room)
@@ -74,13 +73,13 @@ export function Player() {
     if (!v || !col || !b) return
     const dt = Math.min(delta, PHYSICS.maxDelta)
 
-    v.getWorldPosition(feet.current)
-    feet.current.y -= CAPSULE_CENTER
+    v.getWorldPosition(visitorFeet)
+    visitorFeet.y -= CAPSULE_CENTER
     v.rotation.y = dampAngle(v.rotation.y, state.current.heading, MOVEMENT.turnTime, dt)
 
     const aspect = frame.size.width / frame.size.height
     const motion = state.current.motion
-    const dist = updateCamera(frame.camera, feet.current, motion, MOVEMENT.walkSpeed, rapierCtx, col, b, aspect, dt)
+    const dist = updateCamera(frame.camera, visitorFeet, motion, MOVEMENT.walkSpeed, rapierCtx, col, b, aspect, dt)
 
     opacity.current = fadeOpacity(opacity.current, dist, dt)
     setOpacity(materials.current, opacity.current)

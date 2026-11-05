@@ -1,8 +1,11 @@
 import type { Collider, KinematicCharacterController, RigidBody, World } from '@dimforge/rapier3d-compat'
 import type { useRapier } from '@react-three/rapier'
+import { Vector3 } from 'three'
 import { MOVEMENT, PLAYER } from '../config/gameFeel'
+import { keepOffFootprints, type Footprint } from '../decor/footprints'
 import { readMove } from '../input/input'
 import { spring } from '../lib/smoothing'
+import { GROUND_RAY_GROUPS } from '../world/useMuseumColliders'
 import type { Motion } from './cameraRig'
 
 type RapierApi = ReturnType<typeof useRapier>['rapier']
@@ -66,7 +69,9 @@ function updateVelocity(s: MoveState, cameraYaw: number, dt: number) {
 /**
  * One physics step. The controller handles walls (slide) and steps
  * (autostep); height comes from a ground ray so the player stays exactly on
- * the floor (the controller's own grounded flag flickers on flat floors).
+ * the floor (the controller's own grounded flag flickers on flat floors). The
+ * ray sees only `floor_*` meshes. Furniture has no colliders: its footprints
+ * push the capsule back out.
  * Returns the next body position.
  */
 export function stepMovement(
@@ -77,6 +82,7 @@ export function stepMovement(
   collider: Collider,
   body: RigidBody,
   cameraYaw: number,
+  footprints: Footprint[],
   dt: number,
 ) {
   updateVelocity(s, cameraYaw, dt)
@@ -85,10 +91,11 @@ export function stepMovement(
   controller.computeColliderMovement(collider, { x: s.motion.vx * dt, y: -s.fallSpeed * dt, z: s.motion.vz * dt })
   const d = controller.computedMovement()
   const p = body.translation()
-  const next = { x: p.x + d.x, y: p.y + d.y, z: p.z + d.z }
+  const next = new Vector3(p.x + d.x, p.y + d.y, p.z + d.z)
+  keepOffFootprints(next, PLAYER.radius, footprints)
 
   const down = new rapier.Ray(next, { x: 0, y: -1, z: 0 })
-  const ground = world.castRay(down, CAPSULE_CENTER + MOVEMENT.groundSnap, true, undefined, undefined, collider, body)
+  const ground = world.castRay(down, CAPSULE_CENTER + MOVEMENT.groundSnap, true, undefined, GROUND_RAY_GROUPS, collider, body)
   s.grounded = ground !== null
   if (ground) next.y += CAPSULE_CENTER + MOVEMENT.skin - ground.timeOfImpact
   return next

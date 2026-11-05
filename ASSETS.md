@@ -36,3 +36,6 @@ Every external asset used in the project. Allowed licenses: CC0, Pixabay License
 | `web/public/demo/photos/30.webp` + `30_t.webp` | https://pixabay.com/photos/sunset-beach-panorama-landscape-7127298/ | WDhandoko | Pixabay License |
 | `web/public/models/museum.glb` (beige_wall_001, graded) | https://polyhaven.com/a/beige_wall_001 | Poly Haven | CC0 |
 | `web/public/models/museum.glb` (laminate_floor_02, graded) | https://polyhaven.com/a/laminate_floor_02 | Poly Haven | CC0 |
+| `web/public/fonts/dancing-script-latin-500-normal.woff2` | https://fonts.google.com/specimen/Dancing+Script | Impallari Type | SIL OFL (`OFL-DancingScript.txt`) |
+| `web/public/fonts/great-vibes-latin-400-normal.woff2` | https://fonts.google.com/specimen/Great+Vibes | TypeSETit | SIL OFL (`OFL-GreatVibes.txt`) |
+| `web/public/fonts/cormorant-garamond-latin-600-normal.woff2` | https://fonts.google.com/specimen/Cormorant+Garamond | Christian Thalmann | SIL OFL (`OFL-CormorantGaramond.txt`) |
