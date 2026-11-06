@@ -3,16 +3,19 @@ import { mergeGeometries } from "three/addons/utils/BufferGeometryUtils.js";
 import { createSoftMatcap } from "../lighting/matcaps";
 
 /**
- * Rose petals scattered along the walking path, deep red and blush pink, with a few whole roses.
+ * Rose petals, deep red and blush pink, with a few whole roses: scattered along a walking path (createRosePetals), or
+ * laid in a heart on the floor (createRosePetalHeart: the heart in front of the collage, ringed by candles).
  * They react to the visitor like real petals: the ones near the feet are pushed along, lift a little, spin and
- * flutter back down; roses roll a short way. Only the petals around the visitor move, the rest cost nothing.
- * Two InstancedMeshes = two draw calls. Skipped by the floor reflection (they lie on the floor).
+ * flutter back down; roses roll a short way. A heart slowly gathers itself again once you step away. Only the petals
+ * around the visitor move, the rest cost nothing. Two InstancedMeshes = two draw calls per set. Skipped by the floor
+ * reflection (they lie on the floor).
  *
- *   const petals = createRosePetals(path);
- *   scene.add(petals);
- *   useFrame(({ camera }, delta) => petals.update(camera.position, delta));
+ *   const avoid = (x, z) => isOnFootprint(footprints, x, z);                         // footprints.ts
+ *   const petals = [createRosePetals(PATH, { avoid }), createRosePetalHeart(HEART_CENTRE, HEART_WIDTH, { avoid })];
+ *   scene.add(...petals);
+ *   useFrame(({ camera }, delta) => petals.forEach((p) => p.update(camera.position, delta)));
  *
- * `path` is a list of floor points [x, z] in three.js coordinates (y up, floor at y = 0), in walking order.
+ * Floor points are [x, z] in three.js coordinates (y up, floor at y = 0); a path is in walking order.
  */
 function petalGeometry(): THREE.BufferGeometry {
   const shape = new THREE.Shape();
@@ -51,6 +54,10 @@ function roseGeometry(): THREE.BufferGeometry {
 const REACH = 0.45;           // around the visitor's feet, steps and the air they move push petals (metres)
 const TETHER = 0.8;           // a petal never drifts further than this from where it was laid (keeps them off the walls)
 const ROSE_RADIUS = 0.035;    // a rose head rolls like a ball of this radius
+const GATHER = 2.0;           // a heart's petals drift back home once the visitor is this far away (metres)
+
+/** Where one petal (or rose) is laid: a floor point [x, z] from the random source `rnd`. */
+type Placer = (rnd: (a: number, b: number) => number, rose: boolean) => [number, number];
 
 interface Item {
   p: THREE.Vector3; v: THREE.Vector3; home: THREE.Vector2; restY: number; scale: number;
@@ -69,23 +76,25 @@ export class RosePetals extends THREE.Group {
   private readonly walk = new THREE.Vector2();             // the visitor's speed over the floor (m/s, smoothed)
   private readonly step2 = new THREE.Vector2();
   private started = false;
+  private readonly gather: boolean;
   private readonly m = new THREE.Matrix4();
   private readonly e = new THREE.Euler();
   private readonly s = new THREE.Vector3();
   private readonly roll = new THREE.Quaternion();
   private readonly axis = new THREE.Vector3();
 
-  constructor(path: [number, number][], count: number, roses: number, seed: number) {
+  constructor(place: Placer, count: number, roses: number, seed: number, gather: boolean, avoid?: (x: number, z: number) => boolean) {
     super();
+    this.gather = gather;
     const material = new THREE.MeshMatcapMaterial({ matcap: createSoftMatcap(), side: THREE.DoubleSide, toneMapped: false });
     let s = seed;
     const rnd = (a: number, b: number) => { s = (s * 16807) % 2147483647; return a + (s / 2147483647) * (b - a); };
     const c = new THREE.Color();
-    const onPath = (spreadNear: number, spreadFar: number) => {
-      const t = rnd(0, path.length - 1), k = Math.floor(t), f = t - k;
-      const a = path[k], b = path[Math.min(k + 1, path.length - 1)];
-      const spread = rnd(0, 1) < 0.8 ? spreadNear : spreadFar;           // most on the path, a few drift further
-      return [a[0] + (b[0] - a[0]) * f + rnd(-spread, spread), a[1] + (b[1] - a[1]) * f + rnd(-spread, spread)];
+    const spot = (rose: boolean) => {
+      for (let tries = 0; ; tries++) {
+        const [x, z] = place(rnd, rose);
+        if (!avoid?.(x, z) || tries > 30) return [x, z];                // never under furniture or on a rug
+      }
     };
     const colour = () => (rnd(0, 1) < 0.72
       ? c.setHSL(rnd(0.975, 1.0), rnd(0.72, 0.88), rnd(0.3, 0.4))          // deep red
@@ -98,7 +107,7 @@ export class RosePetals extends THREE.Group {
 
     this.petals = new THREE.InstancedMesh(petalGeometry(), material, count);
     for (let i = 0; i < count; i++) {
-      const [x, z] = onPath(0.5, 1.5);
+      const [x, z] = spot(false);
       const it = item(x, 0.002 + i * 0.00001, z, i);
       it.restTilt.set(rnd(-0.12, 0.12), 0); it.yaw = rnd(0, Math.PI * 2); it.restTilt.y = rnd(-0.12, 0.12);
       it.tilt.copy(it.restTilt); it.scale = rnd(0.7, 1.2);
@@ -108,7 +117,7 @@ export class RosePetals extends THREE.Group {
     }
     this.roses = new THREE.InstancedMesh(roseGeometry(), material, roses);
     for (let i = 0; i < roses; i++) {
-      const [x, z] = onPath(0.6, 1.2);
+      const [x, z] = spot(true);
       const it = item(x, 0.03, z, i);
       it.q.setFromEuler(this.e.set(rnd(1.2, 1.5), rnd(0, Math.PI * 2), 0, "YXZ"));   // lying on its side
       it.scale = rnd(0.9, 1.15);
@@ -163,7 +172,7 @@ export class RosePetals extends THREE.Group {
       }
       it.awake = true;
     }
-    if (!it.awake) return false;
+    if (!it.awake) return this.gather && d > GATHER ? this.goHome(it, dt) : false;
 
     const air = it.p.y > it.restY + 1e-4 || it.v.y > 0;
     if (rose) {
@@ -202,6 +211,15 @@ export class RosePetals extends THREE.Group {
     return true;
   }
 
+  /** A heart's petal slides slowly back to where it was laid (the visitor is away); returns whether it moved. */
+  private goHome(it: Item, dt: number): boolean {
+    const hx = it.home.x - it.p.x, hz = it.home.y - it.p.z, far = Math.hypot(hx, hz);
+    if (far < 0.002) return false;
+    const step = Math.min(far, 0.12 * dt) / far;
+    it.p.x += hx * step; it.p.z += hz * step;
+    return true;
+  }
+
   private writePetal(i: number) {
     const it = this.petalItems[i];
     it.q.setFromEuler(this.e.set(it.tilt.x, it.yaw, it.tilt.y, "XYZ"));
@@ -214,6 +232,52 @@ export class RosePetals extends THREE.Group {
   }
 }
 
-export function createRosePetals(path: [number, number][], count = 300, roses = 14, seed = 7): RosePetals {
-  return new RosePetals(path, count, roses, seed);
+export interface RosePetalOptions {
+  count?: number;                    // petals (path 300, heart 520)
+  roses?: number;                    // whole roses among them (path 14, heart 10)
+  seed?: number;                     // another arrangement
+  avoid?: (x: number, z: number) => boolean;   // floor spots to keep clear, e.g. isOnFootprint (footprints.ts)
+}
+
+/** Petals along a walking path: most on it, a few drifting further out. */
+export function createRosePetals(path: [number, number][], { count = 300, roses = 14, seed = 7, avoid }: RosePetalOptions = {}): RosePetals {
+  const place: Placer = (rnd, rose) => {
+    const t = rnd(0, path.length - 1), k = Math.floor(t), f = t - k;
+    const a = path[k], b = path[Math.min(k + 1, path.length - 1)];
+    const spread = rnd(0, 1) < 0.8 ? (rose ? 0.6 : 0.5) : (rose ? 1.2 : 1.5);
+    return [a[0] + (b[0] - a[0]) * f + rnd(-spread, spread), a[1] + (b[1] - a[1]) * f + rnd(-spread, spread)];
+  };
+  return new RosePetals(place, count, roses, seed, false, avoid);
+}
+
+/** Point on the classic heart curve, 2 wide: lobes up to y 0.73, its tip down at y -1.06 (as props.py). */
+function heartPoint(t: number): [number, number] {
+  return [Math.sin(t) ** 3, (13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)) / 16];
+}
+
+/**
+ * A heart of petals on the floor: a dense outline filled more lightly, whole roses along its edge. `centre` [x, z] and
+ * `width` (metres) as props.py's rose-petal heart (HEART_AT, HEART_WIDTH), its lobes towards -z (the collage).
+ */
+export function createRosePetalHeart(centre: [number, number], width: number, { count = 520, roses = 10, seed = 11, avoid }: RosePetalOptions = {}): RosePetals {
+  const k = width / 2, outline = Array.from({ length: 96 }, (_, i) => heartPoint((i / 96) * Math.PI * 2));
+  const inside = (x: number, y: number) => {                         // even-odd test against the outline
+    let odd = false;
+    for (let i = 0, j = outline.length - 1; i < outline.length; j = i++) {
+      const [xi, yi] = outline[i], [xj, yj] = outline[j];
+      if ((yi > y) !== (yj > y) && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) odd = !odd;
+    }
+    return odd;
+  };
+  const place: Placer = (rnd, rose) => {
+    let x: number, y: number;
+    if (rose || rnd(0, 1) < 0.65) {                                   // the outline, a band of petals ~8 cm wide
+      [x, y] = heartPoint(rnd(0, Math.PI * 2));
+      x += rnd(-0.04, 0.04) / k; y += rnd(-0.04, 0.04) / k;
+    } else {
+      do { x = rnd(-1, 1); y = rnd(-1.07, 0.75); } while (!inside(x, y));
+    }
+    return [centre[0] + x * k, centre[1] - y * k];
+  };
+  return new RosePetals(place, count, roses, seed, true, avoid);
 }

@@ -1,22 +1,41 @@
 import { create } from 'zustand'
 
+/** The museum label under a photo. */
+export type PhotoCaption = {
+  title: string
+  date?: string
+  text?: string // a line or two of their story
+}
+
 export type GiftPhoto = {
   src: string
   thumb: string
   w: number
   h: number
-  caption: string
+  caption?: PhotoCaption
 }
 
 export type Gift = {
   theirName: string
   yourName: string
-  dedication: string
+  dedication: string // also the handwritten line on the welcome sign, up to ~20 words
+  quote?: string // the quote board in the heart room, up to ~45 words; "\n" starts a new line
+  date?: string // their special date, shown under their names on the quote board
+  metDate?: string // the day they met, e.g. "3 June 2019": "Since …" on the welcome sign
   finalWords: string
+  storyLine?: string // under the title of the story gallery's chapter board, up to ~20 words
+  reasonsLine?: string // under the title of the right gallery's chapter board, up to ~20 words
+  reasons?: string[] // the love notes in the right gallery, up to 24
+  song?: string // their song, an mp3 or m4a URL, for the gramophone
+  songTitle?: string // on the record's label
+  posterPhoto?: string // the cinema poster's photo URL; default: their first photo
   music: string
   photos: GiftPhoto[]
   roomKey: string
 }
+
+export const DEFAULT_QUOTE = 'You are my today and all of my tomorrows.'
+export const NEON_TEXT = 'forever us'
 
 const DEMOS = ['6', '30']
 const DEFAULT_DEMO = '30'

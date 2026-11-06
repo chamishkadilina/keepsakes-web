@@ -1,7 +1,7 @@
 #!/bin/bash
 # Rebuilds the museum look and its baked lighting. Run from the repo root.
 #   tools/bake/pipeline.sh <blender-python> [samples=320] [scale=1.0]
-# <blender-python>: a Python with the `bpy` 5.2 module (pip install bpy) + numpy scipy pillow.
+# <blender-python>: a Python with the `bpy` 5.2 module (pip install bpy) + numpy scipy pillow. Node.js for gltfpack.
 # Input:  assets-src/blender/museum_base.blend (the owner's approved layout, before the look is applied)
 # Output: assets-src/blender/museum.blend, web/public/models/museum.glb, web/public/models/lightmaps/
 set -e
@@ -14,6 +14,8 @@ $PY $T/finish_lightmaps.py $WORK/uv.blend $WORK $WORK/out $WORK/final.blend
 $PY $T/bake_trim_vertex.py $WORK/final.blend $WORK/out/lightmaps/lightmaps.json $N
 $PY $T/smooth_trim_light.py $WORK/final.blend 6
 cp $WORK/final.blend $A/museum.blend
-$PY $T/export_glb.py $A/museum.blend web/public/models/museum.glb
+$PY $T/export_glb.py $A/museum.blend $WORK/museum.glb
+# meshopt compression (~1/3 the size): names, custom properties and both UV sets stay exactly as exported
+npx --yes gltfpack@0.22.0 -i $WORK/museum.glb -o web/public/models/museum.glb -cc -kn -km -ke -kv -vpf -vtf -vn 10 -vc 12
 rm -rf web/public/models/lightmaps && cp -r $WORK/out/lightmaps web/public/models/lightmaps
 echo "done: museum.blend, museum.glb, lightmaps"

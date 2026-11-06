@@ -1,21 +1,35 @@
 """Final gallery (owner's final reference video), lit like a real gallery.
 Warm cream-beige plain walls with tall cream skirting and thin gold panel lines, cream tray ceilings with a small
-cornice and gold lines, a few recessed downlights, black track rails with white spot heads: every photo sits in its
-own pool of light. A backlit collage niche in the heart room, glossy dark walnut-cherry floor.
+cornice and gold lines, a few recessed downlights, track spots: every photo sits in its own pool of light.
+A backlit collage niche in the heart room, glossy dark walnut-cherry floor. Furniture, exhibits and romantic decor
+(props.py): the foyer's title wall between sheers with little lights glowing through them and velvet curtains at the
+door where the story begins, a chapter board straight ahead as you come into the story gallery and the right gallery,
+velvet sofas, the quote board and a grand dome of roses beside the collage, the dance floor in a pool of light with
+its gramophone, love notes hanging over the right gallery, kentia palms, weeping figs, rose topiaries and urns of
+roses, golden light strings along the heart room's walls, candles and lanterns that glow on the floors and walls
+(accent lights), heart balloons, the screen room's ceiling projector, its screen on a little stage between velvet
+curtains, popcorn and a "Now Showing" poster, velvet curtains at its garden door (a dimmer room, like a little cinema),
+and the rose garden. The foyer has no photos of its own: the title wall is its exhibit; the chapter boards take two
+photo places.
 Usage: python design.py <in.blend> <out.blend>   (textures in ./textures next to out.blend)"""
-import bpy, bmesh, sys, math
+import bpy, bmesh, sys, os, math
 from mathutils import Vector, Matrix
 from mathutils.bvhtree import BVHTree
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import props
 
 src, dst = sys.argv[1], sys.argv[2]
 bpy.ops.wm.open_mainfile(filepath=src)
 STRUCT, DECOR, LIGHTS = (bpy.data.collections[n] for n in ("structure", "decor", "lights"))
+for n in ("01", "02", "03", "12", "27"):                           # the foyer's photos: the title wall instead; 12 and 27:
+    for name in (f"slot_frame_{n}", f"light_frame_{n}"):            # the story and right galleries' chapter boards
+        bpy.data.objects.remove(bpy.data.objects[name])
 H, TRAY_H = 4.0, 4.32                # ceiling band / raised tray
 INSET, T = 1.45, 0.05                # band width, fascia thickness
 WARM_WHITE = (1.0, 0.722, 0.446)     # ~2400 K: downlights, photo spots, wall wash
 NICHE_WHITE = (1.0, 0.722, 0.422)    # collage niche LEDs, a touch warmer
 SKY = (0.638, 0.484, 0.349)          # warm dusk through the doors and over the garden
-LEVEL = {"down": 1.1, "spot": 1.25, "wash": 0.9, "niche": 0.3}   # light levels, tuned against the reference
+LEVEL = {"down": 1.1, "spot": 1.25, "wash": 0.9, "niche": 0.3, "accent": 1.0}   # light levels, tuned against the reference
 ROOMS = {                            # wall centre lines (Blender x, y); tray=False keeps a flat ceiling
     "foyer": [((0, 0, 11, 10), True)],
     "story_gallery": [((0, 10, 11, 21), True)],
@@ -159,7 +173,7 @@ for room, parts in ROOMS.items():
         rect_line(bm_gold, a0 - 0.32, a1 + 0.32, b0 - 0.32, b1 + 0.32, H - 0.001)            # gold line on the band
         rect_line(bm_gold, a0 + 0.35, a1 - 0.35, b0 + 0.35, b1 - 0.35, TRAY_H - 0.001)       # gold line in the tray
         lamps += grid(a0 + 0.9, a1 - 0.9, b0 + 0.9, b1 - 0.9, TRAY_H, 2.4)                  # a few lamps, like a real gallery
-    energy = LIGHT_PER_M2 * area / len(lamps) * (0.35 if room == "screen_room" else 1.0)
+    energy = LIGHT_PER_M2 * area / len(lamps) * (0.3 if room == "screen_room" else 1.0)   # the screen room: a little dimmer, like a cinema
     for x, y, z in lamps:
         downlight(x, y, z, energy)
     print(room, "lamps", len(lamps), "W each", round(energy))
@@ -187,11 +201,39 @@ for room, parts in ROOMS.items():
             ob.rotation_euler = face.to_track_quat("-Z", "Y").to_euler()
             LIGHTS.objects.link(ob)
 
-# ---------------- track lights: one rail per wall line, a spot head aimed at every photo ----------------
+# ---------------- furniture, exhibits and decor (props.py): each exhibit in its own spot, candles that glow ----------------
+PROPS = bpy.data.collections.new("props"); bpy.context.scene.collection.children.link(PROPS)
+ATLAS = os.path.join(os.path.dirname(os.path.abspath(dst)), "textures", "decor", "decor_atlas.jpg")   # props_atlas.py
+spots, accents = props.add(PROPS, material, ATLAS)
+for i, a in enumerate(accents):                     # candles, lanterns, the sheers' lights, the neon, the dance floor's spot
+    ld = bpy.data.lights.new(f"light_accent_{i:03d}", a["kind"])
+    ld.color = a["colour"]; ld.energy = a["watts"] * LEVEL["accent"]
+    if a["kind"] == "AREA":
+        ld.shape = "RECTANGLE"; ld.size, ld.size_y = a["size"]
+    elif a["kind"] == "SPOT":
+        ld.spot_size = a["cone"]; ld.spot_blend = 0.6; ld.shadow_soft_size = 0.05
+    else:
+        ld.shadow_soft_size = 0.02
+    ob = bpy.data.objects.new(ld.name, ld); ob.location = a["pos"]; LIGHTS.objects.link(ob)
+    if "normal" in a:
+        ob.rotation_euler = Vector(a["normal"]).to_track_quat("-Z", "Y").to_euler()
+for name, rail, target, wall, radius in spots:
+    ld = bpy.data.lights.new(f"light_exhibit_{name}", "SPOT"); ld.color = WARM_WHITE
+    ob = bpy.data.objects.new(ld.name, ld); ob.location = (rail.x, rail.y, 3.96); LIGHTS.objects.link(ob)
+    dist = (target - ob.location).length
+    ld.energy = 640 * LEVEL["spot"] * (dist / 3.0) ** 2                              # as bright on the piece as a photo's spot
+    ld.shadow_soft_size = 0.05; ld.spot_blend = 0.6
+    ld.spot_size = 2 * math.atan(radius / dist)                                       # a soft pool just wider than the piece
+    ob["target"] = list(target); ob["wall"] = list(wall)                              # hangs on that wall's rail
+
+# ---------------- track lights: one rail per wall line, a spot head aimed at every photo and exhibit ----------------
 slots = {o.name: o for o in bpy.data.collections["frames_slots"].objects}
 board = slots["collage_board"]
 heads = []
-for l in [l for l in LIGHTS.objects if l.name.startswith(("light_frame", "light_collage"))]:
+for l in [l for l in LIGHTS.objects if l.name.startswith(("light_frame", "light_collage", "light_exhibit"))]:
+    if "target" in l:
+        heads.append((l, Vector(l["target"]), Vector(l["wall"])))
+        continue
     s = slots.get(l.name.replace("light_", "slot_")) or board
     target = s.matrix_world.translation.copy()
     target.z -= 0.1 if s is not board else 0.0
@@ -340,4 +382,4 @@ for o in ceil:
 bpy.context.scene["sky_colour"] = SKY        # read by the bake scripts
 bpy.ops.object.select_all(action="DESELECT")
 bpy.ops.wm.save_as_mainfile(filepath=dst, compress=True, relative_remap=False)
-print("ok downlights", n_down, "heads", len(heads), "panels", n_panels, "ceilings", len(ceil))
+print("ok downlights", n_down, "heads", len(heads), "panels", n_panels, "ceilings", len(ceil), "accents", len(accents))

@@ -2,6 +2,9 @@
   "theirName": "Maya",
   "yourName": "Ethan",
   "dedication": "Every photo in here is a moment I never want to forget. This place is yours.",
+  "message": "From the first day, you made ordinary things feel like the best part of my life. Slow mornings, long walks, the way you laugh before you finish a joke. I kept every one of them.\n\nI built this place so you can walk through our story whenever you want to. Every room is a day I would live again.\n\nWherever we go next, I only want to go there with you.",
+  "date": "14 February 2021",
+  "metDate": "3 June 2019",
   "finalWords": "Of all the places I've been, my favourite is next to you.",
   "music": "piano",
   "photos": [
@@ -10,42 +13,42 @@
       "thumb": "/demo/photos/01_t.webp",
       "w": 1280,
       "h": 853,
-      "caption": "Where it all began"
+      "caption": { "title": "Where it all began" }
     },
     {
       "src": "/demo/photos/02.webp",
       "thumb": "/demo/photos/02_t.webp",
       "w": 853,
       "h": 1280,
-      "caption": "Our first autumn walk"
+      "caption": { "title": "Our first autumn walk" }
     },
     {
       "src": "/demo/photos/03.webp",
       "thumb": "/demo/photos/03_t.webp",
       "w": 1280,
       "h": 854,
-      "caption": "The kiss I still think about"
+      "caption": { "title": "The kiss I still think about" }
     },
     {
       "src": "/demo/photos/04.webp",
       "thumb": "/demo/photos/04_t.webp",
       "w": 853,
       "h": 1280,
-      "caption": "The day we said yes"
+      "caption": { "title": "The day we said yes" }
     },
     {
       "src": "/demo/photos/05.webp",
       "thumb": "/demo/photos/05_t.webp",
       "w": 1280,
       "h": 491,
-      "caption": "That endless beach"
+      "caption": { "title": "That endless beach" }
     },
     {
       "src": "/demo/photos/06.webp",
       "thumb": "/demo/photos/06_t.webp",
       "w": 853,
       "h": 1280,
-      "caption": "Holding on"
+      "caption": { "title": "Holding on" }
     }
   ],
   "roomKey": "demo-room-local"

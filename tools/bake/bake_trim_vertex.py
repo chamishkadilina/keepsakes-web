@@ -1,4 +1,4 @@
-"""Bakes light into the vertices of thin trim (mouldings, skirting, door frames) instead of a texture.
+"""Bakes light into the vertices of thin trim (mouldings, skirting, door frames) and of the props instead of a texture.
 Thin strips (2-5 cm) are narrower than a lightmap texel, so a texture leaves black gaps; per-corner colours do not.
 Usage: python bake_trim_vertex.py <final.blend> <lightmaps.json> <samples>
 Stores colour attribute "light" (linear, divided by the lightmaps intensity) and saves in place."""
@@ -11,18 +11,19 @@ man = json.load(open(man_path)); K = man["intensity"]
 TRIM = ["skirting", "door_jambs", "chair_rail", "crown_moulding", "boiserie"]
 objs = [bpy.data.objects[n] for n in TRIM if n in bpy.data.objects] + [o for o in bpy.data.objects if o.name.startswith("cove_") or o.get("bake_vertex")]
 
-# finer vertices so light pools along long mouldings stay smooth (every 0.4 m)
+# finer vertices so light pools along long mouldings stay smooth (every 0.4 m); props are modelled fine enough
 for o in objs:
-    bm = bmesh.new(); bm.from_mesh(o.data)
-    lo = [min(v.co[i] for v in bm.verts) for i in range(3)]; hi = [max(v.co[i] for v in bm.verts) for i in range(3)]
-    for axis in (0, 1, 2):
-        step = 0.4 if axis < 2 else 0.5
-        k = lo[axis] + step
-        while k < hi[axis]:
-            co = [0, 0, 0]; co[axis] = k; no = [0, 0, 0]; no[axis] = 1
-            bmesh.ops.bisect_plane(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], dist=1e-5, plane_co=co, plane_no=no)
-            k += step
-    bm.to_mesh(o.data); bm.free()
+    if not o.get("prop"):
+        bm = bmesh.new(); bm.from_mesh(o.data)
+        lo = [min(v.co[i] for v in bm.verts) for i in range(3)]; hi = [max(v.co[i] for v in bm.verts) for i in range(3)]
+        for axis in (0, 1, 2):
+            step = 0.4 if axis < 2 else 0.5
+            k = lo[axis] + step
+            while k < hi[axis]:
+                co = [0, 0, 0]; co[axis] = k; no = [0, 0, 0]; no[axis] = 1
+                bmesh.ops.bisect_plane(bm, geom=bm.verts[:] + bm.edges[:] + bm.faces[:], dist=1e-5, plane_co=co, plane_no=no)
+                k += step
+        bm.to_mesh(o.data); bm.free()
     if "lightmap" in o.data.uv_layers:
         o.data.uv_layers.remove(o.data.uv_layers["lightmap"])
     if "lightmap_group" in o:

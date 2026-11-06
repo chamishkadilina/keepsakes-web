@@ -30,7 +30,6 @@ export function App() {
       >
         <VsyncFrameLoop />
         {/* No lights and no post-processing: all light is baked (design/lighting.md). */}
-        <color attach="background" args={LIGHTING.sky} />
         <Suspense fallback={null}>
           {/* Steps before default useFrames (priority 0), so the camera sees this frame's interpolated player. */}
           <Physics timeStep={PHYSICS.timeStep} interpolate updatePriority={-1}>

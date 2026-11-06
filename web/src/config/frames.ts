@@ -6,6 +6,8 @@
 /** Which photo goes where (BUILD_SPEC §5). */
 export const ASSIGN = {
   collageCount: 12, // the first 12 photos go on the collage
+  // Turns in the frames' fill order held by slots no longer in the model (slot_frame_01–03, 12, 27): those photos join the collage.
+  retiredTurns: [0, 1, 6, 33, 35],
   defaultPriority: 3, // used when a slot_frame_NN has no "priority" property
 }
 
