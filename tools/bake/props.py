@@ -4,13 +4,17 @@ material in each part of the museum (prop_<zone>_<material>: a few draw calls, a
 marks each piece's floor footprint (footprint_<name>: a box or a circle the visitor walks round), where every candle
 flame burns (candle_flames), the little lights behind the foyer's sheers (fairy_lights), the projector's lens
 (projector_lens) and the dimmer switch (dimmer_switch), and returns the exhibit spotlights and the accent lights
-(candles, lanterns, the light strings, the sheers' little lights, the neon, the uplights by the screen) for the bake.
+(candles, lanterns, the sheers' little lights, the neon, the uplights by the screen) for the bake.
 
   - the velvet sofas with cream cushions, rugs, marble tables and consoles with roses and candles
-  - exhibits in their own spotlights: the title wall facing you as you come in (foyer), the quote board on its easel
-    and a grand dome of roses beside the collage
-  - romance: ivory sheers with little lights glowing through them along the foyer's side walls, a velvet swag and two
-    tall gold lanterns at the door where the story begins, candles (their flames burn on the web), heart foil balloons
+  - exhibits in their own spotlights: the big title wall facing you as you come in (foyer), the quote board on its
+    easel and a grand dome of roses beside the collage
+  - each chapter's title on a smaller board straight ahead as you come into its room (story gallery, right gallery)
+  - the foyer's round rug with their initials; the heart room's dance floor in a pool of light, with a gramophone that
+    plays their song; love notes hanging over the right gallery (one per reason); popcorn, drinks and a "Now Showing"
+    poster in the cinema
+  - romance: ivory sheers with little lights glowing through them along the foyer's side walls, velvet curtains framing
+    the door where the story begins, candles (their flames burn on the web), heart foil balloons
     that float, golden light strings along the heart room's walls and a gold dimmer by its door, a rose garland round
     the collage, candles round the rose-petal heart in front of it, flower stands and urns, a neon
   - green house trees: kentia palms, weeping figs, olive trees and fiddle-leaf figs; rose topiaries (props_trees.py)
@@ -27,10 +31,11 @@ from mathutils import Vector, Matrix
 from props_geometry import (TAU, UP, Parts, track, rbox, cuts, cushion, lathe, tube, place, set_uv, in_rect, grid, polar_grid,
                             uv_box)
 from props_flowers import leaf, bloom, roses, rose_leaves, vase_of_roses, flower_urn
-from props_romance import (plinth, candle_cluster, candle_tray, lantern, heart_point, balloon_bunch, ceiling_balloons,
-                           light_string, sheer_drape, dimmer_switch, velvet_ropes, neon_sign, floral_stand, niche_garland)
+from props_romance import (plinth, candle_cluster, candle_tray, lantern, heart_point, balloon_bunch, light_string,
+                           sheer_drape, dimmer_switch, velvet_ropes, neon_sign, floral_stand, niche_garland, gramophone,
+                           love_notes)
 from props_trees import olive_tree, fig_tree, kentia_palm, weeping_fig, rose_topiary
-from props_cinema import projector, curtain_panel, pelmet, cinema_screen
+from props_cinema import projector, curtain_panel, pelmet, cinema_screen, poster, popcorn_box, drink_cup
 from props_garden import hedge, rose_bush, rose_arch, heart_arch, garden_bench
 from props_atlas import RUGS, MARBLE_RECT, uv_rect
 
@@ -42,6 +47,13 @@ PALETTE = {                                   # material name: sRGB colour (the 
     "ribbon_red": (150, 22, 40),              # the topiaries' satin bows
     "quote_board": (246, 240, 228),           # the quote board's face (the web writes the quote on it)
     "welcome_board": (246, 240, 228),         # the title wall's face (the web writes the welcome on it)
+    "chapter_story": (246, 240, 228),         # the story gallery's chapter board (the web writes its title on it)
+    "chapter_reasons": (246, 240, 228),       # the right gallery's chapter board (the web writes its title on it)
+    "monogram_rug": (244, 238, 228),          # the foyer's round rug (the web weaves their initials into it)
+    "wood_walnut": (92, 58, 40),              # the gramophone's polished case
+    "gramophone_record": (24, 22, 22),        # its record (the web turns it and draws its grooves and label)
+    "poster_face": (240, 236, 230),           # the cinema poster's lit face (the web draws their poster; not baked)
+    "popcorn": (246, 226, 170),               # buttery popcorn
     "sheer_ivory": (248, 242, 234),           # the foyer's sheer curtains (see-through on the web, not baked)
     "screen_white": (240, 240, 238),          # the cinema screen (softly lit on the web, not baked)
     "rose_petal": (150, 12, 30),              # deep red roses, velvet ropes
@@ -62,11 +74,12 @@ PALETTE = {                                   # material name: sRGB colour (the 
     "neon_text": (255, 120, 180),             # where the web writes the neon words (not baked)
 }
 # trim_cream (plinths, planters, urns, vases, candles, the letters' faces) is the building's own cream (design.py)
-UNBAKED = ("glass", "neon_text", "lens_glow", "bulb_glow", "sheer_ivory", "screen_white")
+UNBAKED = ("glass", "neon_text", "lens_glow", "bulb_glow", "sheer_ivory", "screen_white", "poster_face")
 DOUBLE_SIDED = ("rose_petal", "rose_blush", "rose_leaf", "olive_leaf", "fig_leaf", "ficus_leaf", "velvet_cream", "curtain_velvet",
                 "sheer_ivory")                    # thin surfaces (the web draws both sides)
 NO_REFLECTION = ("rose_petal", "rose_blush", "rose_leaf", "olive_leaf", "fig_leaf", "ficus_leaf", "velvet_cream", "bark", "soil",
-                 "decor_atlas", "glass", "ribbon_red", "neon_text", "lens_glow", "bulb_glow", "sheer_ivory")
+                 "decor_atlas", "glass", "ribbon_red", "neon_text", "lens_glow", "bulb_glow", "sheer_ivory", "monogram_rug",
+                 "popcorn")
 
 
 # ---------------------------------------------------------------- seating
@@ -156,12 +169,13 @@ def framed_board(parts, rng, board, board_w, board_h, f=0.035, posy=None):
     corner_posies(parts, rng, board_w, board_h, posy or board_h / 1.36)
 
 
-def title_wall(parts, rng, width=3.2, height=2.0, bottom=0.9):
-    """The foyer's title wall, straight ahead as she comes in: a big board in a slim gold frame hung flat on the wall,
-    roses on two corners; the web writes the welcome on it (welcome_board: "The Museum of Us", their names, the date,
-    his note). The wall is local y = 0, the room +y. Returns the board's centre (for its spotlight)."""
-    done = {name: track(parts[name]) for name in ("welcome_board", "trim_cream", "gold_metal", "rose_petal", "rose_blush", "rose_leaf")}
-    framed_board(parts, rng, "welcome_board", width, height, f=0.05, posy=1.8)
+def title_wall(parts, rng, width=4.2, height=2.4, bottom=0.8, board="welcome_board", frame=0.06, posy=2.1):
+    """A board in a slim gold frame hung flat on the wall, roses on two corners; the web writes on its face (`board`):
+    the foyer's big title wall, straight ahead as she comes in (welcome_board: "The Museum of Us", their names, the date,
+    his note), and, smaller, a chapter's title straight ahead as you come into its room (chapter_story,
+    chapter_reasons). The wall is local y = 0, the room +y. Returns the board's centre (for its spotlight)."""
+    done = {name: track(parts[name]) for name in (board, "trim_cream", "gold_metal", "rose_petal", "rose_blush", "rose_leaf")}
+    framed_board(parts, rng, board, width, height, f=frame, posy=posy)
     m = Matrix.Translation((0, 0.012, bottom))
     for name, fn in done.items():
         bmesh.ops.transform(parts[name], matrix=m, verts=fn())
@@ -237,6 +251,41 @@ def rug(parts, rng, design="heart", step=0.1, thickness=0.012):
     set_uv(bm, edge, lambda co: uv(co * 0.995))                                           # the edge shows the binding
 
 
+def monogram_rug(parts, rng, radius=1.3, thickness=0.012):
+    """A round ivory rug in the foyer's open middle: the web weaves the couple's initials into it (monogram_rug: UVs
+    across the disc, read from the entrance). A thin edge all round; you walk over it."""
+    bm = parts["monogram_rug"]
+    uv = lambda co: (0.5 + co.x / (2 * radius), 0.5 + co.y / (2 * radius))
+    _, ring = polar_grid(bm, radius, thickness, 0.1, 72, uv)
+    low = [bm.verts.new((v.co.x, v.co.y, 0.0)) for v in ring]
+    n = len(ring)
+    edge = [bm.faces.new((low[k], low[(k + 1) % n], ring[(k + 1) % n], ring[k])) for k in range(n)]
+    set_uv(bm, edge, lambda co: uv(co * 0.995))                                           # the edge shows the binding
+
+
+def dance_floor(parts, rng, radius=1.25, thickness=0.015, ceiling=4.32):
+    """A round dance floor in the heart room: white marble with a gold rim, a fine gold ring and a little gold heart in
+    its middle (its tip towards local +y), in a soft pool of light from the ceiling (a spot, baked). Marked for the web
+    (dance_floor: its middle and "radius"): the gramophone plays their song while they stand on it. You walk over it."""
+    bm, g = parts["decor_atlas"], parts["gold_metal"]
+    rect = uv_rect(MARBLE_RECT, 2)
+    polar_grid(bm, radius, thickness, 0.12, 72, lambda co: in_rect(rect, 0.5 + co.x / (2.1 * radius), 0.5 + co.y / (2.1 * radius)))
+    lathe(g, [(radius + 0.014, 0.0), (radius + 0.014, thickness - 0.004), (radius + 0.01, thickness + 0.001),
+              (radius - 0.004, thickness + 0.001)], 96)                                   # the gold rim
+    lathe(g, [(0.84 * radius + 0.012, thickness + 0.0008), (0.84 * radius, thickness + 0.0008)], 96)   # a fine ring
+    t = thickness + 0.001
+    centre = g.verts.new((0, 0, t))
+    edge = [g.verts.new((0.19 * x, -0.19 * y, t)) for x, y in (heart_point(TAU * k / 48) for k in range(48))]
+    for k in range(48):
+        f = g.faces.new((centre, edge[k], edge[(k + 1) % 48]))
+        f.normal_update()
+        if f.normal.z < 0:
+            f.normal_flip()
+    parts.lights.append(dict(kind="SPOT", pos=Vector((0, 0, ceiling - 0.08)), normal=Vector((0, 0, -1)),
+                             cone=2 * math.atan((radius + 0.35) / (ceiling - 0.08)), colour=(1.0, 0.86, 0.68), watts=1200.0))
+    parts.markers["dance_floor"] = (Vector((0, 0, thickness)), {"radius": radius})
+
+
 # ---------------------------------------------------------------- tables
 
 def marble_top(parts, radius, z, thickness=0.025, seg=48):
@@ -250,14 +299,21 @@ def marble_top(parts, radius, z, thickness=0.025, seg=48):
     set_uv(bm, faces, lambda co: in_rect(rect, 0.05 + 0.9 * abs(math.atan2(co.y, co.x)) / math.pi, 0.5 + (co.z - z) * 4))
 
 
-def side_table(parts, rng, radius=0.23, height=0.56):
-    """Small round marble side table on a slim gold stem, a little vase of roses and a candle on it."""
+def side_table(parts, rng, radius=0.23, height=0.56, treat=None):
+    """Small round marble side table on a slim gold stem, a little vase of roses and a candle on it (by the cinema's
+    loveseat, `treat` instead of the roses: "popcorn" or "drinks")."""
     g = parts["gold_metal"]
     stem = [(0.016, 0.04 + (height - 0.1) * k / 5) for k in range(6)]
     lathe(g, [(0, 0), (0.16, 0), (0.165, 0.004), (0.165, 0.01), (0.15, 0.014), (0.03, 0.02)] + stem +
           [(0.03, height - 0.04), (0.08, height - 0.028), (0.08, height - 0.024), (0, height - 0.024)], 32)
     marble_top(parts, radius, height, 0.024)
-    vase_of_roses(parts, rng, (-0.05, 0.04, height), 5, 0.17)
+    if treat == "popcorn":
+        popcorn_box(parts, rng, (-0.05, 0.05, height))
+    elif treat == "drinks":
+        for x, y in ((-0.1, 0.03), (-0.01, 0.11)):
+            drink_cup(parts, rng, (x, y, height))
+    else:
+        vase_of_roses(parts, rng, (-0.05, 0.04, height), 5, 0.17)
     candle_cluster(parts, rng, (0.1, -0.07, height), 1, 0.6)
 
 
@@ -300,11 +356,6 @@ def console(parts, rng, width=1.2, depth=0.38, height=0.8):
 
 # ---------------------------------------------------------------- the museum's pieces
 
-def rel(points, at):
-    """Points given in museum coordinates, made relative to a piece standing at `at`."""
-    return [(x - at[0], y - at[1]) for x, y in points]
-
-
 HEART_AT = (17.0, 18.6)                                   # the rose-petal heart in front of the collage (web: rosePetals.ts)
 HEART_WIDTH = 1.9
 GARDEN_PATH = [(38.4, 6.5), (39.9, 6.5), (41.4, 7.4), (42.8, 8.6), (44.3, 9.5), (45.8, 9.7), (47.0, 9.1)]
@@ -343,50 +394,54 @@ def path_lanterns(path, first=1.6, every=2.2, offset=0.75):
 # (name, piece, yaw, (x, y), options). Placed off the photos, doors and walking routes; exhibits name the rail point and
 # the wall (normal into the room) their spotlight hangs from: "spot": ((x, y), (nx, ny), pool radius).
 LAYOUT = [
-    # foyer, the invitation: the title wall facing you as you come in, in its own spotlight between two rose topiaries;
-    # ivory sheers with little lights behind them along both side walls; the door where the story begins dressed in a
-    # velvet swag under a pelmet, with a tall gold lantern either side; balloons at the ceiling, green trees in the
+    # foyer, the invitation: the big title wall facing you as you come in, in its own spotlight between two rose
+    # topiaries, heart balloons on gold weights either side of it; ivory sheers with little lights behind them along
+    # both side walls; the door where the story begins framed by velvet curtains hanging straight either side under a
+    # pelmet (it is in the corner: the right one's hook is on the side wall), its way kept clear; green trees in the
     # corners, urns of roses in front of the sheers
-    ("welcome", title_wall, 180, (4.0, 9.875), {"spot": ((4.0, 8.745), (0, -1), 1.9)}),
+    ("welcome", title_wall, 180, (4.45, 9.875), {"spot": ((4.45, 8.745), (0, -1), 2.4)}),
     ("topiary_foyer_w", rose_topiary, 0, (1.95, 9.35), {}),
-    ("topiary_foyer_e", rose_topiary, 0, (6.05, 9.35), {}),
+    ("topiary_foyer_e", rose_topiary, 0, (6.95, 9.35), {}),
+    ("balloons_foyer_w", balloon_bunch, 0, (1.9, 8.55), {"count": 5, "weight": True}),
+    ("balloons_foyer_e", balloon_bunch, 0, (7.0, 8.55), {"count": 5, "weight": True}),
+    ("rug_foyer", monogram_rug, 0, (4.45, 5.6), {}),
     ("sheers_foyer_w", sheer_drape, -90, (0.2, 9.6), {"length": 9.3}),
     ("sheers_foyer_e", sheer_drape, 90, (10.875, 1.85), {"length": 7.75}),
-    ("swag_foyer", curtain_panel, 180, (9.3875, 9.875), {"side": 1, "opening": 2.975, "rod": 3.88, "top_inner": -1.47,
-                                                         "gather": 14, "fold": 0.07}),
+    ("curtain_foyer_w", curtain_panel, 180, (9.16, 9.875), {"side": 1, "opening": 2.74, "beyond": 0.34, "rod": 3.88, "top_inner": 1.08}),
+    ("curtain_foyer_e", curtain_panel, 180, (9.16, 9.875), {"side": -1, "opening": 2.74, "beyond": 0.34, "rod": 3.88, "top_inner": 1.08,
+                                                           "hook": "side"}),
     ("pelmet_foyer", pelmet, 180, (9.135, 9.875), {"width": 3.47, "height": 0.45, "top": 4.31}),
-    ("lantern_foyer_w", lantern, 0, (8.25, 9.2), {"height": 1.0}),
-    ("lantern_foyer_e", lantern, 0, (10.4, 9.2), {"height": 1.0}),
-    ("palm_foyer_ne", kentia_palm, 30, (9.9, 7.5), {}),
     ("ficus_foyer_sw", weeping_fig, 75, (1.35, 1.15), {}),
     ("urn_foyer_w", flower_urn, 0, (0.72, 3.0), {}),
     ("urn_foyer_e", flower_urn, 0, (10.35, 3.0), {}),
-    ("balloons_foyer", ceiling_balloons, 0, (5.5, 5.3), {"spots": rel([(4.5, 5.0), (5.4, 4.95), (6.4, 5.05), (4.95, 5.85), (6.05, 5.75)], (5.5, 5.3)), "ceiling": 4.32}),
     ("olive_foyer", olive_tree, 20, (0.95, 9.1), {}),
     ("fig_foyer", fig_tree, 0, (10.1, 0.95), {}),
-    # story gallery: roses by the doorway and in a corner, consoles, a weeping fig in the far corner, balloons
+    # story gallery (how it began): its chapter board straight ahead as you come in, between balloons and a flower
+    # stand; roses by the doorway and in a corner, consoles, a weeping fig in the far corner
     ("topiary_story_e", rose_topiary, 0, (10.45, 14.5), {}),
     ("topiary_story_sw", rose_topiary, 0, (0.75, 10.75), {}),
     ("console_story_1", console, -90, (0.39, 13.85), {"width": 0.9, "depth": 0.32}),
     ("console_story_2", console, -90, (0.39, 17.15), {"width": 0.9, "depth": 0.32}),
     ("ficus_story_nw", weeping_fig, 140, (1.0, 20.0), {}),
     ("stand_story_ne", floral_stand, 0, (10.25, 20.2), {}),
-    ("balloons_story", ceiling_balloons, 0, (8.2, 18.0), {"spots": rel([(7.6, 17.6), (8.4, 17.4), (9.0, 17.9), (7.9, 18.4), (8.7, 18.5)], (8.2, 18.0)), "ceiling": 4.32}),
-    # heart room: the sofa facing the collage, the quote board and the roses either side of it, the rose-petal heart
-    # ringed by candles in front of it, a garland round it, balloons; rose topiaries along the south wall, kentia palms
-    # either side of the room, golden light strings along the walls, a gold dimmer on the wall by the door
+    ("chapter_story", title_wall, 180, (8.7, 20.8), {"board": "chapter_story", "width": 2.2, "height": 1.3, "bottom": 1.15,
+                                                    "frame": 0.045, "posy": 1.25, "spot": ((8.7, 19.67), (0, -1), 1.3)}),
+    ("balloons_story", balloon_bunch, 0, (7.05, 20.2), {"count": 5, "weight": True}),
+    # heart room (us, now): the sofa facing the collage with balloons either side, the quote board and the roses either
+    # side of it, the rose-petal heart ringed by candles in front of it, a garland round it; in its south half the dance
+    # floor in a pool of light with the gramophone and balloons either side; rose topiaries along the south wall, kentia
+    # palms either side of the room, golden light strings along the walls, a gold dimmer on the wall by the door
     ("sofa_heart", sofa, 0, (17.0, 14.3), {"width": 2.3}),
     ("rug_heart", rug, 0, (17.0, 15.55), {"design": "heart"}),
     ("coffee_table_heart", coffee_table, 0, (17.0, 15.75), {}),
     ("side_table_heart_w", side_table, 0, (15.5, 14.35), {}),
     ("side_table_heart_e", side_table, 0, (18.5, 14.35), {}),
     ("balloons_sofa", balloon_bunch, 0, (18.5, 14.35), {"count": 5, "anchor": (0.14, 0.1, 0.56)}),
+    ("balloons_sofa_w", balloon_bunch, 0, (15.5, 14.35), {"count": 5, "anchor": (-0.14, 0.1, 0.56)}),
     ("quote_board", easel_sign, 200, (13.35, 18.65), {"spot": ((12.255, 17.3), (1, 0), 0.75)}),
     ("roses", rose_display, 0, (20.6, 18.55), {"spot": ((21.745, 17.3), (-1, 0), 0.5)}),
     ("ropes_roses", velvet_ropes, 0, (20.6, 18.55), {"posts": [(-0.8, -0.3), (0.0, -0.85), (0.8, -0.3)]}),
     ("garland", niche_garland, 180, (17.0, 20.63), {}),
-    ("balloons_heart", ceiling_balloons, 0, (17.0, 17.3), {"spots": rel([(15.8, 16.2), (17.0, 16.1), (18.2, 16.25), (15.75, 18.5), (17.0, 18.65),
-                                                                       (18.25, 18.55), (16.4, 17.4), (17.6, 17.45)], (17.0, 17.3)), "ceiling": 4.32}),
     ("fig_heart_w", fig_tree, 0, (11.75, 14.3), {}),
     ("fig_heart_e", fig_tree, 0, (22.25, 14.3), {}),
     ("palm_heart_w", kentia_palm, 200, (12.05, 9.3), {}),
@@ -397,7 +452,9 @@ LAYOUT = [
     ("lights_heart_en", light_string, 90, (22.84, 14.4), {"length": 6.0}),
     ("lights_heart_s", light_string, 0, (11.6, 1.73), {"length": 10.8}),
     ("dimmer_heart", dimmer_switch, -90, (11.125, 13.7), {}),
-    ("balloons_heart_south", ceiling_balloons, 0, (17.0, 9.0), {"spots": rel([(16.1, 8.4), (17.2, 8.1), (18.0, 8.9), (16.5, 9.6), (17.6, 9.8)], (17.0, 9.0)), "ceiling": 4.32}),
+    ("dance_floor", dance_floor, 0, (17.0, 6.2), {}),
+    ("gramophone", gramophone, 90, (19.05, 6.2), {}),
+    ("balloons_dance", balloon_bunch, 0, (14.95, 6.2), {"count": 5, "weight": True}),
     ("topiary_heart_sw", rose_topiary, 0, (15.4, 2.25), {}),
     ("topiary_heart_se", rose_topiary, 0, (18.6, 2.25), {}),
     ("olive_heart_sw", olive_tree, 30, (11.9, 2.4), {}),
@@ -407,9 +464,12 @@ LAYOUT = [
     ("neon", neon_sign, 0, (24.75, 1.73), {}),
     ("lantern_corridor_w", lantern, 0, (23.9, 2.0), {}),
     ("lantern_corridor_e", lantern, 0, (25.6, 2.0), {}),
-    # right gallery (the reasons I love you): balloons, a kentia palm between stands, flower stands and trees in the
-    # corners; its middle is left open
-    ("balloons_right", ceiling_balloons, 0, (30.4, 15.7), {"spots": rel([(29.5, 15.5), (30.4, 15.3), (31.3, 15.6), (29.9, 16.2), (30.9, 16.1)], (30.4, 15.7)), "ceiling": 4.32}),
+    # right gallery (reasons I love you): its chapter board straight ahead as you come in, balloons beside it, the love
+    # notes hanging over its open middle, a kentia palm between stands, flower stands and trees in the corners
+    ("chapter_reasons", title_wall, 180, (26.5, 20.8), {"board": "chapter_reasons", "width": 2.2, "height": 1.3, "bottom": 1.15,
+                                                       "frame": 0.045, "posy": 1.25, "spot": ((26.5, 19.67), (0, -1), 1.3)}),
+    ("balloons_reasons", balloon_bunch, 0, (28.3, 20.25), {"count": 5, "weight": True}),
+    ("love_notes", love_notes, 0, (30.4, 17.0), {}),
     ("palm_right", kentia_palm, 20, (24.15, 17.2), {}),
     ("stand_right_1", floral_stand, 0, (23.55, 15.9), {}),
     ("stand_right_2", floral_stand, 0, (23.55, 18.5), {}),
@@ -418,13 +478,14 @@ LAYOUT = [
     ("fig_right_se", fig_tree, 0, (37.05, 13.95), {}),
     ("stand_right_e1", floral_stand, 0, (37.2, 15.55), {}),
     ("stand_right_e2", floral_stand, 0, (37.2, 18.45), {}),
-    # screen room: the loveseat on the seat markers facing the screen, the projector behind it, the screen in its frame
-    # on a little stage between velvet curtains, curtains on the garden door, rose topiaries either side of the stage,
-    # each washed by a little floor light
+    # screen room: the loveseat on the seat markers facing the screen with popcorn and drinks beside it, the projector
+    # behind it, the screen in its frame on a little stage between velvet curtains, the "Now Showing" poster by the way
+    # in, curtains on the garden door, rose topiaries either side of the stage, each washed by a little floor light
     ("loveseat_screen", sofa, 0, (32.25, 7.11), {}),
     ("rug_screen", rug, 0, (32.25, 8.0), {"design": "screen"}),
-    ("side_table_screen_w", side_table, 0, (31.12, 7.15), {}),
-    ("side_table_screen_e", side_table, 0, (33.38, 7.15), {}),
+    ("side_table_screen_w", side_table, 0, (31.12, 7.15), {"treat": "popcorn"}),
+    ("side_table_screen_e", side_table, 0, (33.38, 7.15), {"treat": "drinks"}),
+    ("poster", poster, 0, (28.2, 1.7), {}),
     ("balloons_loveseat", balloon_bunch, 0, (33.0, 7.11), {"count": 3, "anchor": (0, 0, 0.65)}),
     ("projector", projector, 0, (32.25, 5.0), {"drop": 0.72, "scale": 1.5, "aim": (0.0, 7.45, -1.45)}),
     ("curtain_s", curtain_panel, 90, (37.77, 6.475), {"side": -1}),
@@ -465,7 +526,7 @@ LAYOUT = [
   + [(f"bush_garden_{i}", rose_bush, 0, at, {}) for i, at in enumerate([(40.4, 5.0), (40.0, 8.3), (42.2, 9.9), (44.6, 10.75), (48.6, 9.6), (50.2, 8.9)])] \
   + [(f"lantern_garden_{i}", lantern, 0, at, {"height": 0.65}) for i, at in enumerate(path_lanterns(GARDEN_PATH))]
 
-WALKABLE = {rug}                                          # pieces you walk over
+WALKABLE = {rug, monogram_rug, dance_floor}             # pieces you walk over
 
 
 def zone(x, y):
@@ -507,6 +568,7 @@ def build(name, piece, yaw, at, opts):
                     loop[pivot].uv = (w.x, 1 + w.y)
     parts.flames = [m @ p for p in parts.flames]
     parts.fairies = [m @ p for p in parts.fairies]
+    parts.notes = [(m @ p, top) for p, top in parts.notes]
     for light in parts.lights:
         light["pos"] = m @ light["pos"]
         if "normal" in light:
@@ -526,8 +588,9 @@ def add(collection, material, atlas_path):
     "prop" = the material; material(name, rgb) makes the materials), an empty per piece standing on the floor marking
     its footprint (footprint_<name>: "footprint" = half width, half depth, turned by the empty's rotation, and "radius"
     for a round one; "walkable" for rugs), one empty listing every candle flame (candle_flames: "flames" = x, y, z, ...;
-    the web lights them), one listing the little lights behind the sheers (fairy_lights: "fairies" = x, y, z, ...) and
-    the pieces' named markers (projector_lens, dimmer_switch: "aim").
+    the web lights them), one listing the little lights behind the sheers (fairy_lights: "fairies" = x, y, z, ...), one
+    listing where the love notes hang (love_notes: "notes" = x, y, z of a card's middle, its ribbon's top height, ...) and
+    the pieces' named markers (projector_lens, dimmer_switch, gramophone: "aim"; dance_floor: "radius").
     Returns (exhibit spotlights: (name, rail point, target, wall normal, radius), accent lights: Parts.lights dicts)."""
     import bpy
     mats = {name: material(name, rgb) for name, rgb in PALETTE.items()}
@@ -539,7 +602,7 @@ def add(collection, material, atlas_path):
         tex = nt.nodes.new("ShaderNodeTexImage")
         tex.image = image
         nt.links.new(tex.outputs["Color"], nt.nodes["Principled BSDF"].inputs["Base Color"])
-    merged, flames, fairies, spots, lights = {}, [], [], [], []
+    merged, flames, fairies, notes, spots, lights = {}, [], [], [], [], []
 
     def empty(name, at, rotation=0.0, **props):
         ob = bpy.data.objects.new(name, None)
@@ -568,6 +631,7 @@ def add(collection, material, atlas_path):
             bpy.data.meshes.remove(me)
         flames += parts.flames
         fairies += parts.fairies
+        notes += parts.notes
         lights += parts.lights
         for marker, (pos, extras) in parts.markers.items():
             empty(marker, pos, **extras)
@@ -584,6 +648,7 @@ def add(collection, material, atlas_path):
             spots.append((name, Vector(rail), target, Vector((*wall, 0)), radius))
     empty("candle_flames", (0, 0, 0), flames=[round(c, 4) for p in flames for c in p])
     empty("fairy_lights", (0, 0, 0), fairies=[round(c, 3) for p in fairies for c in p])
+    empty("love_notes", (0, 0, 0), notes=[round(c, 3) for p, top in notes for c in (*p, top)])
     for (z, mat_name), bm in merged.items():
         me = bpy.data.meshes.new(f"prop_{z}_{mat_name}"); bm.to_mesh(me); bm.free(); me.materials.append(mats[mat_name])
         ob = bpy.data.objects.new(me.name, me); collection.objects.link(ob)

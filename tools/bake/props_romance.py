@@ -1,10 +1,11 @@
 """Romantic pieces for the museum: pillar candles and gold lanterns (their flames burn on the web), heart foil balloons
 that gently float, strings of golden bulbs, sheer curtains with little lights behind them, a gold dimmer switch,
-velvet ropes, a neon sign, tall flower stands and a rose garland round the collage. Candles, lanterns, the bulbs and the neon also light the room in the bake (Parts.lights).
-Local coordinates: floor at z = 0, a piece's front faces +y."""
+velvet ropes, a neon sign, tall flower stands, a rose garland round the collage, the gramophone by the dance floor and
+where the love notes hang. Candles, lanterns, the little lights behind the sheers and the neon also light the room in
+the bake (Parts.lights). Local coordinates: floor at z = 0, a piece's front faces +y."""
 import bmesh, math
 from mathutils import Vector, Matrix
-from props_geometry import TAU, UP, track, rbox, cuts, lathe, tube, place, set_uv
+from props_geometry import TAU, UP, track, rbox, cuts, lathe, tube, place, set_uv, polar_grid
 from props_flowers import RED_BLUSH_WHITE, bloom, leaf, roses, rose_leaves, pick
 from props_atlas import swatch_uv
 
@@ -159,23 +160,11 @@ def balloon_bunch(parts, rng, count, anchor=(0, 0, 0), height=(1.4, 2.1), spread
                 ("gold_ribbon", "white_ribbon", "pink_ribbon")[i % 3])
 
 
-def ceiling_balloons(parts, rng, spots, ceiling):
-    """Heart balloons that have floated up to the ceiling at `spots` (x, y), their ribbons hanging down."""
-    for i, (x, y) in enumerate(spots):
-        centre = Vector((x, y, ceiling - 0.2))
-        anchor = centre + Vector((rng.uniform(-0.12, 0.12), rng.uniform(-0.12, 0.12), -rng.uniform(1.0, 1.5)))
-        balloon(parts, rng, centre, rng.uniform(0, TAU), anchor, FOILS[i % len(FOILS)],
-                ("gold_ribbon", "white_ribbon", "pink_ribbon")[i % 3], tied=False)
-
-
-BULB_LIGHT = (1.0, 0.66, 0.34)          # warm golden bulbs (linear RGB), their glow baked on the walls
-
-
 def light_string(parts, rng, length, hook=1.9, sag=0.2, spacing=0.25, top=3.78, off=0.07):
     """A string of round golden bulbs draped along a wall just under the cornice, as couples hang them at home: a thin
     gold wire in shallow swags between hooks every ~`hook` metres, a bulb hanging from it every `spacing` metres.
-    Runs along local x from 0 to `length`, `off` metres out from the wall (local y = 0, the room is +y). The bulbs glow
-    golden on the web (bulb_glow); each swag also lights the wall a little in the bake."""
+    Runs along local x from 0 to `length`, `off` metres out from the wall (local y = 0, the room is +y). Only the bulbs
+    glow, golden, on the web (bulb_glow): they throw no pools of light on the wall."""
     g, glow = parts["gold_metal"], parts["bulb_glow"]
     n = max(1, round(length / hook))
     span = length / n
@@ -192,8 +181,6 @@ def light_string(parts, rng, length, hook=1.9, sag=0.2, spacing=0.25, top=3.78, 
             bulb = p - Vector((0, 0, 0.058))
             for v in bmesh.ops.create_icosphere(glow, subdivisions=2, radius=0.022)["verts"]:
                 v.co += bulb
-        mid = Vector((x0 + span / 2, off + 0.02, top - sag - 0.06))
-        parts.lights.append(dict(kind="POINT", pos=mid, colour=BULB_LIGHT, watts=2.2 * span))
     lathe(g, [(0, 0), (0.008, 0), (0.008, 0.012), (0, 0.012)], 6, at=(length, off - 0.005, top - 0.006))
 
 
@@ -251,6 +238,61 @@ def dimmer_switch(parts, rng, z=1.3):
     for v in done():                                                                     # ... and turned to face +y
         v.co = Vector((v.co.x, 0.008 + v.co.z, z + 0.012 - v.co.y))
     parts.markers["dimmer_switch"] = (Vector((0, 0.04, z + 0.012)), {"aim": [0, 1, 0]})
+
+
+def gramophone(parts, rng, height=0.8, lift=25):
+    """A gramophone on a round cream plinth by the dance floor: a polished walnut case with gold bands, a gold crank and
+    tone arm, a record on its turntable (gramophone_record: the web turns it and plays their song) and a big gold horn
+    opening like a flower towards local +y, `lift` degrees up. Marked for the web (gramophone: the horn's mouth, "aim" =
+    the way it plays)."""
+    g, w = parts["gold_metal"], parts["wood_walnut"]
+    plinth(parts, height, 0.22)
+    cuts(w, rbox(w, (0.34, 0.34, 0.15), 0.012, 2, at=(0, 0, height + 0.075)), 0, -0.17, 0.17, 0.11)
+    for z in (height + 0.008, height + 0.142):                                           # gold bands round the case
+        rbox(g, (0.346, 0.346, 0.012), 0.004, 1, at=(0, 0, z))
+    deck = height + 0.15
+    lathe(g, [(0, deck), (0.15, deck), (0.15, deck + 0.012), (0, deck + 0.012)], 40)       # the turntable
+    rec, r = deck + 0.012, 0.145
+    _, ring = polar_grid(parts["gramophone_record"], r, rec + 0.004, 0.03, 40,
+                            lambda co: (0.5 + co.x / (2 * r), 0.5 + co.y / (2 * r)))
+    low = [parts["gramophone_record"].verts.new((v.co.x, v.co.y, rec)) for v in ring]
+    edge = [parts["gramophone_record"].faces.new((low[k], low[(k + 1) % 40], ring[(k + 1) % 40], ring[k])) for k in range(40)]
+    set_uv(parts["gramophone_record"], edge, lambda co: (0.5 + 0.49 * co.x / r, 0.5 + 0.49 * co.y / r))
+    lathe(g, [(0, rec + 0.004), (0.005, rec + 0.004), (0.005, rec + 0.028), (0, rec + 0.03)], 12)   # spindle
+    post = Vector((0.13, -0.12, deck))                                                   # tone arm, resting on the record
+    lathe(g, [(0, 0), (0.022, 0), (0.022, 0.03), (0.012, 0.042), (0, 0.046)], 16, at=post)
+    end = Vector((0.075, 0.075, rec + 0.03))
+    tube(g, [post + Vector((0, 0, 0.044)), Vector((0.125, -0.02, rec + 0.07)), end], 0.007, 8)
+    lathe(g, [(0, -0.012), (0.026, -0.012), (0.028, 0.0), (0.026, 0.01), (0, 0.012)], 20, at=end + Vector((0, 0, -0.008)))
+    tube(g, [Vector((0.17, 0.0, height + 0.08)), Vector((0.23, 0.0, height + 0.08)), Vector((0.23, 0.0, height + 0.03))], 0.006, 8)
+    lathe(g, [(0, 0), (0.012, 0), (0.014, 0.02), (0.012, 0.04), (0, 0.042)], 12, at=(0.23, 0.0, height - 0.012))   # crank knob
+    base = Vector((0, -0.06, deck + 0.2))                                                # the horn, from the back of the case
+    tube(g, [Vector((0, -0.13, deck - 0.03)), Vector((0, -0.17, deck + 0.08)), base], 0.022, 12)
+    outer = [(0.022, 0.0), (0.03, 0.12), (0.045, 0.24), (0.075, 0.34), (0.13, 0.42), (0.21, 0.47), (0.27, 0.49), (0.276, 0.486)]
+    inner = [(rr - 0.005, z - 0.004) for rr, z in reversed(outer[1:-1])] + [(0.017, 0.0)]
+    done = track(g)
+    lathe(g, outer + inner, 48)
+    turn = Matrix.Translation(base) @ Matrix.Rotation(math.radians(lift - 90), 4, "X")
+    for v in done():
+        v.co = turn @ v.co
+    aim = Vector((0, math.cos(math.radians(lift)), math.sin(math.radians(lift))))
+    parts.markers["gramophone"] = (base + aim * 0.49, {"aim": [round(c, 4) for c in aim]})
+
+
+def love_notes(parts, rng, width=4.0, depth=3.0, cols=6, rows=4, low=2.2, high=2.75, ceiling=4.32):
+    """Where the love notes hang over the right gallery's open middle: cols × rows cards spread over `width` × `depth`
+    (local x, y), between `low` and `high` above the floor, each on a ribbon from the ceiling, ordered so that any first
+    few are spread out: the web hangs one card per reason (parts.notes: card middle, ribbon top)."""
+    pts = [Vector((-width / 2 + width * (i + 0.5) / cols + rng.uniform(-0.15, 0.15),
+                   -depth / 2 + depth * (j + 0.5) / rows + rng.uniform(-0.15, 0.15), rng.uniform(low, high)))
+           for j in range(rows) for i in range(cols)]
+    order = [min(pts, key=lambda p: p.xy.length)]                                        # from the middle outwards
+    rest = [p for p in pts if p is not order[0]]
+    while rest:
+        far = max(rest, key=lambda p: min((p.xy - q.xy).length for q in order))
+        order.append(far)
+        rest.remove(far)
+    parts.notes += [(p, ceiling) for p in order]
 
 
 # ---------------------------------------------------------------- velvet ropes
@@ -311,18 +353,12 @@ def floral_stand(parts, rng, height=1.05):
 
 
 def niche_garland(parts, rng, half_width=2.78, z_top=3.67, z_low=1.75, inset=0.07):
-    """A lush garland of red, blush and white roses with leaves along the top of the collage niche's frame (on its face
-    and resting on top of it), big clusters in its corners and cascades down both sides. Local: x across the niche,
+    """A lush garland of red, blush and white roses along the top of the collage niche's frame (on its face and resting
+    on top of it), big clusters in its corners and cascades down both sides: roses only, no leaves. Local: x across the niche,
     z up, y = 0 the frame's face (the roses face +y; the frame's top runs back to y = -0.17). It stays on the frame,
     clear of the photos."""
     def rose(p, axis, k):
         bloom(parts[pick(rng, RED_BLUSH_WHITE)], p, axis.normalized(), k, rng.uniform(0, TAU), petals=7, grid=(4, 3))
-
-    def leaves(p, n, out):
-        for _ in range(n):
-            d = (out + Vector((rng.uniform(-1, 1), rng.uniform(-0.2, 0.3), rng.uniform(-0.7, 0.7)))).normalized()
-            length = rng.uniform(0.08, 0.12)
-            leaf(parts["rose_leaf"], p + d * 0.015, d, length, length * 0.42, length * 0.2)
 
     n = round(2 * half_width / 0.1)
     for i in range(n + 1):
@@ -330,12 +366,10 @@ def niche_garland(parts, rng, half_width=2.78, z_top=3.67, z_low=1.75, inset=0.0
         rose(Vector((x, 0.04, z_top + rng.uniform(-0.03, 0.03))), Vector((rng.uniform(-0.3, 0.3), 1, rng.uniform(0.0, 0.4))), rng.uniform(1.3, 1.6))
         rose(Vector((x + 0.05, -rng.uniform(0.03, 0.1), z_top + 0.12 + rng.uniform(0, 0.03))), Vector((rng.uniform(-0.3, 0.3), 0.7, 1)),
              rng.uniform(1.4, 1.7))                                                      # on top of the frame
-        leaves(Vector((x, 0.0, z_top + 0.05)), 1 + i % 2, Vector((0, 0.6, 0.4)))
     for s in (-1, 1):
         for _ in range(16):                                                              # corner clusters
             p = Vector((s * (half_width - 0.06) + rng.uniform(-0.15, 0.15), rng.uniform(-0.04, 0.08), z_top + rng.uniform(-0.18, 0.16)))
             rose(p, Vector((s * 0.35, 1, 0.25)), rng.uniform(1.6, 2.0))
-        leaves(Vector((s * (half_width - 0.06), 0.03, z_top)), 8, Vector((s * 0.5, 0.6, 0)))
         m = round((z_top - z_low) / 0.1)
         for j in range(1, m + 1):                                                        # cascades down the sides
             t = j / m
@@ -343,4 +377,3 @@ def niche_garland(parts, rng, half_width=2.78, z_top=3.67, z_low=1.75, inset=0.0
             rose(Vector((s * (half_width - inset) + rng.uniform(-0.02, 0.02), 0.04, z)), Vector((s * 0.25, 1, 0.1)), 1.4 - 0.5 * t)
             if j % 2 or t < 0.5:
                 rose(Vector((s * (half_width + 0.03), -rng.uniform(0.04, 0.1), z - 0.05)), Vector((s, 0.4, 0.1)), 1.25 - 0.4 * t)
-            leaves(Vector((s * half_width, 0.0, z)), 1, Vector((s, 0.3, -0.3)))

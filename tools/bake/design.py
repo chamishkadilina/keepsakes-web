@@ -2,12 +2,15 @@
 Warm cream-beige plain walls with tall cream skirting and thin gold panel lines, cream tray ceilings with a small
 cornice and gold lines, a few recessed downlights, track spots: every photo sits in its own pool of light.
 A backlit collage niche in the heart room, glossy dark walnut-cherry floor. Furniture, exhibits and romantic decor
-(props.py): the foyer's title wall between sheers with little lights glowing through them and a velvet swag at the
-door where the story begins, velvet sofas, the quote board and a grand dome of roses beside the collage, kentia palms,
-weeping figs, rose topiaries and urns of roses, golden light strings along the heart room's walls, candles and
-lanterns that glow on the floors and walls (accent lights), heart balloons, the screen room's ceiling projector, its
-screen on a little stage between velvet curtains and velvet curtains at its garden door (a dimmer room, like a little
-cinema), and the rose garden. The foyer has no photos of its own: the title wall is its exhibit.
+(props.py): the foyer's title wall between sheers with little lights glowing through them and velvet curtains at the
+door where the story begins, a chapter board straight ahead as you come into the story gallery and the right gallery,
+velvet sofas, the quote board and a grand dome of roses beside the collage, the dance floor in a pool of light with
+its gramophone, love notes hanging over the right gallery, kentia palms, weeping figs, rose topiaries and urns of
+roses, golden light strings along the heart room's walls, candles and lanterns that glow on the floors and walls
+(accent lights), heart balloons, the screen room's ceiling projector, its screen on a little stage between velvet
+curtains, popcorn and a "Now Showing" poster, velvet curtains at its garden door (a dimmer room, like a little cinema),
+and the rose garden. The foyer has no photos of its own: the title wall is its exhibit; the chapter boards take two
+photo places.
 Usage: python design.py <in.blend> <out.blend>   (textures in ./textures next to out.blend)"""
 import bpy, bmesh, sys, os, math
 from mathutils import Vector, Matrix
@@ -18,8 +21,9 @@ import props
 src, dst = sys.argv[1], sys.argv[2]
 bpy.ops.wm.open_mainfile(filepath=src)
 STRUCT, DECOR, LIGHTS = (bpy.data.collections[n] for n in ("structure", "decor", "lights"))
-for name in ("slot_frame_01", "slot_frame_02", "slot_frame_03", "light_frame_01", "light_frame_02", "light_frame_03"):
-    bpy.data.objects.remove(bpy.data.objects[name])                # the foyer's photos and their spots: the title wall instead
+for n in ("01", "02", "03", "12", "27"):                           # the foyer's photos: the title wall instead; 12 and 27:
+    for name in (f"slot_frame_{n}", f"light_frame_{n}"):            # the story and right galleries' chapter boards
+        bpy.data.objects.remove(bpy.data.objects[name])
 H, TRAY_H = 4.0, 4.32                # ceiling band / raised tray
 INSET, T = 1.45, 0.05                # band width, fascia thickness
 WARM_WHITE = (1.0, 0.722, 0.446)     # ~2400 K: downlights, photo spots, wall wash
@@ -201,11 +205,13 @@ for room, parts in ROOMS.items():
 PROPS = bpy.data.collections.new("props"); bpy.context.scene.collection.children.link(PROPS)
 ATLAS = os.path.join(os.path.dirname(os.path.abspath(dst)), "textures", "decor", "decor_atlas.jpg")   # props_atlas.py
 spots, accents = props.add(PROPS, material, ATLAS)
-for i, a in enumerate(accents):                     # candles, lanterns, the light strings, the neon's glow on the wall
+for i, a in enumerate(accents):                     # candles, lanterns, the sheers' lights, the neon, the dance floor's spot
     ld = bpy.data.lights.new(f"light_accent_{i:03d}", a["kind"])
     ld.color = a["colour"]; ld.energy = a["watts"] * LEVEL["accent"]
     if a["kind"] == "AREA":
         ld.shape = "RECTANGLE"; ld.size, ld.size_y = a["size"]
+    elif a["kind"] == "SPOT":
+        ld.spot_size = a["cone"]; ld.spot_blend = 0.6; ld.shadow_soft_size = 0.05
     else:
         ld.shadow_soft_size = 0.02
     ob = bpy.data.objects.new(ld.name, ld); ob.location = a["pos"]; LIGHTS.objects.link(ob)

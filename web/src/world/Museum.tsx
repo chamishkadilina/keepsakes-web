@@ -2,8 +2,11 @@ import { useEffect, useRef, useState } from 'react'
 import { useFrame, useThree } from '@react-three/fiber'
 import { useGLTF } from '@react-three/drei'
 import * as THREE from 'three'
+import { FONTS_URL } from '../config/decor'
 import { LIGHTING } from '../config/lighting'
 import {
+  DANCE_PETALS,
+  DANCE_RING,
   EAST_PATH,
   EAST_PETALS,
   FLOOR_BALLOON_AREAS,
@@ -16,8 +19,11 @@ import {
   RIGHT_PETALS,
 } from '../config/route'
 import { animateBalloons } from '../decor/balloons'
+import { createChapterBoards } from '../decor/chapterBoards'
 import { createFloorBalloons, type FloorBalloons } from '../decor/floorBalloons'
 import { getFootprints, isOnFootprint } from '../decor/footprints'
+import { createMonogramRug } from '../decor/monogramRug'
+import { createMoviePoster } from '../decor/moviePoster'
 import { createNeonSign } from '../decor/neonSign'
 import { createQuoteBoard } from '../decor/quoteBoard'
 import { createRosePetalHeart, createRosePetals, type RosePetals } from '../decor/rosePetals'
@@ -32,11 +38,12 @@ import { createDuskSky } from '../lighting/duskSky'
 import { createFloorReflection } from '../lighting/floorReflection'
 import { createProjectorBeam } from '../lighting/projectorBeam'
 import { useWalk, visitorFeet } from '../store'
+import { disposeDrawn } from './disposeDrawn'
+import { useGiftDecor } from './useGiftDecor'
 import { useMuseumColliders } from './useMuseumColliders'
 import { visitorStart } from './visitorStart'
 
 const MODEL_URL = '/models/museum.glb'
-const FONTS_URL = '/fonts'
 const GARDEN_FLOOR = 'floor_6_garden' // grass: no reflection
 
 type FloorReflection = ReturnType<typeof createFloorReflection>
@@ -63,7 +70,7 @@ function lightOnce(scene: THREE.Object3D): Promise<void> {
   return lit.get(scene)!
 }
 
-/** Their words: the neon sign, the welcome sign and the quote board. */
+/** Their words: the neon sign, the title wall, the rug, the chapter boards, the quote board and the poster. */
 async function writeWords(scene: THREE.Object3D, gift: Gift): Promise<void> {
   const names = `${gift.yourName} & ${gift.theirName}`
   await lightOnce(scene)
@@ -74,7 +81,16 @@ async function writeWords(scene: THREE.Object3D, gift: Gift): Promise<void> {
     note: gift.dedication,
     fontsUrl: FONTS_URL,
   })
+  await createMonogramRug(scene, { names, fontsUrl: FONTS_URL })
+  await createChapterBoards(scene, {
+    story: { line: gift.storyLine },
+    reasons: { line: gift.reasonsLine },
+    fontsUrl: FONTS_URL,
+  })
   await createQuoteBoard(scene, { quote: gift.quote || DEFAULT_QUOTE, names, date: gift.date })
+  const posterPhoto = gift.posterPhoto ?? gift.photos[0]?.src
+  const photo = posterPhoto ? await new THREE.ImageLoader().loadAsync(posterPhoto) : undefined
+  await createMoviePoster(scene, { names, photo, fontsUrl: FONTS_URL })
 }
 
 // Once per loaded scene too: each sign replaces its board's material and texture.
@@ -97,18 +113,11 @@ function createDecor(scene: THREE.Object3D, footprints: ReturnType<typeof getFoo
       createRosePetalHeart(HEART_CENTRE, HEART_WIDTH, { avoid }),
       createRosePetals(EAST_PATH, { ...EAST_PETALS, avoid }),
       createRosePetals(RIGHT_PATH, { ...RIGHT_PETALS, avoid }),
+      createRosePetals(DANCE_RING, { ...DANCE_PETALS, avoid }),
       createRosePetals(GARDEN_PATH, { ...GARDEN_PETALS, avoid }),
     ],
     floorBalloons: createFloorBalloons(FLOOR_BALLOON_AREAS, { footprints }),
   }
-}
-
-function disposeDrawn(root: THREE.Object3D): void {
-  root.traverse((obj) => {
-    if (!(obj instanceof THREE.Mesh || obj instanceof THREE.Points)) return
-    obj.geometry.dispose()
-    ;(obj.material as THREE.Material).dispose()
-  })
 }
 
 function woodFloors(scene: THREE.Object3D): THREE.Mesh[] {
@@ -123,8 +132,8 @@ function woodFloors(scene: THREE.Object3D): THREE.Mesh[] {
  * Loads the hand-made museum, hides `col_*` boxes, applies its baked lighting,
  * ceiling lamps and floor reflection (design/lighting.md), adds the candle flames,
  * the little lights behind the sheers, the dusk sky, the projector's beam, the rose petals and the
- * floor balloons, floats the heart balloons, writes the neon sign, the welcome sign and the quote
- * board, and reports where she starts and the footprints.
+ * floor balloons, floats the heart balloons, writes their words, and reports where
+ * she starts and the footprints. The love notes and the gramophone: useGiftDecor.
  * Colliders: useMuseumColliders. Photos and frames: Gallery.
  * Never builds geometry itself.
  */
@@ -136,6 +145,7 @@ export function Museum() {
   const gift = useGift((s) => s.gift)
   const reflection = useRef<FloorReflection | null>(null)
   useMuseumColliders(scene)
+  useGiftDecor(scene, gift, decor !== null)
 
   useEffect(() => {
     let alive = true
@@ -161,7 +171,7 @@ export function Museum() {
 
   useEffect(() => {
     if (!gift) return
-    writeWordsOnce(scene, gift).catch((err) => console.error('Neon sign, welcome sign or quote board failed:', err))
+    writeWordsOnce(scene, gift).catch((err) => console.error('Writing their words failed:', err))
   }, [scene, gift])
 
   useEffect(() => {

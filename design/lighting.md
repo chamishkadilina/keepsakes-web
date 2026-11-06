@@ -10,18 +10,21 @@ Target: the owner's final reference video (`design/reference-final/*.png`, frame
 - glossy dark walnut-cherry floor with soft reflections of the lights; red and blush-pink rose petals and a few roses along the paths through every room that scatter when you walk through them: to a heart of petals in front of the collage, ringed by candles, through the corridor and the screen room to the garden door, and into the right gallery
 - a romantic museum, warm like a home: channel-tufted dusty-rose velvet sofas with cream cushions (a three-seater facing the collage on an ivory-and-rose rug with a marble coffee table and side tables; the loveseat facing the screen), big green house trees in cream planters with gold rims (kentia palms, weeping figs, olive trees, fiddle-leaf figs), marble tables and consoles with roses and candles
 - flowers as at a wedding: rose topiaries tied with red satin bows, urns of roses spilling over tall cream pedestals
-- the foyer is the invitation: the title wall straight ahead as she comes in, in its own spotlight between two rose topiaries; ivory sheers along both side walls with a curtain of little warm lights glowing through them; the door where the story begins dressed in a wine-red velvet swag under a pelmet, a tall gold lantern either side. It has no photos of its own
-- candles and gold lanterns where they belong (on the consoles and tables, round the petal heart, in the corridor, at the foyer's door into the story, along the garden path and either side of the garden bench), their flames flickering and their warm glow on the floors and walls; heart foil balloons, half of them red, the rest blush and rose gold, that float, bob and slowly turn (tied to the sofa tables, or drifted up to the ceiling); tall gold flower stands; a garland of roses round the collage; a pink neon of their words in the corridor
-- strings of round, bright golden bulbs draped in swags along the heart room's walls, their warm glow on the walls
+- the foyer is the invitation: the big title wall straight ahead as she comes in, in its own spotlight between two rose topiaries and two bunches of heart balloons on little gold weights; a round ivory rug in its open middle with their initials in gold; ivory sheers along both side walls with a curtain of little warm lights glowing through them; the door where the story begins framed by wine-red velvet curtains hanging straight either side under a pelmet, its way kept clear. It has no photos of its own
+- candles and gold lanterns where they belong (on the consoles and tables, round the petal heart, in the corridor, along the garden path and either side of the garden bench), their flames flickering and their warm glow on the floors and walls; heart foil balloons, half of them red, the rest blush and rose gold, that float, bob and slowly turn at eye level (tied to the sofa's side tables, or standing on little gold heart weights by the title wall, the chapter boards and the dance floor); tall gold flower stands; a garland of roses round the collage; a pink neon of their words in the corridor
+- strings of round, bright golden bulbs draped in swags along the heart room's walls: only the bulbs glow, with no pools of light on the walls between them
+- each chapter's title on a smaller board in the same style, straight ahead as you come into its room: "How It Began" (story gallery) and "Reasons I Love You" (right gallery), each with his line under it if he wrote one
+- in the heart room's south half, a round marble dance floor with a gold rim and a little gold heart, in a soft pool of light, and beside it a gramophone on a cream plinth that plays their song while they stand on the dance floor (its record turns); petals round the floor's edge
+- love notes hanging over the right gallery's open middle, one cream card for each of his reasons, on thin red and gold ribbons above head height, slowly turning
 - a gold dimmer switch on the heart room's wall by its door (nothing to do yet: the `dimmer_switch` marker is there for a later feature)
 - a few party balloons lying on the floors of the heart room and the right gallery that roll and bounce away when she walks into them
-- in their own spotlights: the foyer's title wall ("Welcome to The Museum of Us", their names, the date and his note), the couple's quote on a big ivory board on a gold easel and a grand dome of roses either side of the collage
-- the screen room is a little cinema: a little dimmer, a white projector hanging from the ceiling whose soft beam (dust drifting through it) lands on a real cinema screen (matte white in a black frame with a fine gold edge, above a low velvet stage, between wine-red velvet stage curtains tied back under a pelmet), the same curtains tied back at the garden door, rose topiaries either side of the stage, each washed by a warm floor light
+- in their own spotlights: the foyer's title wall ("Welcome to The Museum of Us", their names, the date and his note), the chapter boards, the couple's quote on a big ivory board on a gold easel and a grand dome of roses either side of the collage
+- the screen room is a little cinema: a little dimmer, a white projector hanging from the ceiling whose soft beam (dust drifting through it) lands on a real cinema screen (matte white in a black frame with a fine gold edge, above a low velvet stage, between wine-red velvet stage curtains tied back under a pelmet), the same curtains tied back at the garden door, a "Now Showing" film poster of the two of them glowing in a lightbox by the way in, popcorn and drinks on the tables by the loveseat, rose topiaries either side of the stage, each washed by a warm floor light
 - every photo can have a small museum label under it (title, date, a line of their story)
 - the garden finale through the screen room: an arch of roses, lanterns along a path of petals, a bench for two in front of a heart of roses, hedges, rose bushes and olive trees
 - no sconces, no picture lights
 
-**The web must look like `design/web-reference/*.png`.** Those screenshots were rendered in a real browser (three.js r170) with the drop-in code below (`web-arrival.png`: the foyer as she comes in; `web-welcome.png`: the title wall; `web-sheers.png`, `web-doorway.png`: the sheers with their little lights and the door into the story; `web-quote.png`: the quote board; `web-candles.png`: the petal heart; `web-neon.png`: the neon; `web-dimmer.png`: the dimmer switch; `web-heart-lights.png`, `web-floor-balloons.png`: the light strings and the balloons on the floor; `web-screen.png`, `web-beam.png`, `web-projector.png`, `web-curtains.png`: the screen room; `web-garden*.png`: the garden; the room views show the decor).
+**The web must look like `design/web-reference/*.png`.** Those screenshots were rendered in a real browser (three.js r170) with the drop-in code below (`web-arrival.png`: the foyer as she comes in; `web-welcome.png`: the title wall; `web-rug.png`: the monogram rug; `web-chapter-story.png`, `web-chapter-reasons.png`: the chapter boards; `web-dance.png`, `web-gramophone.png`: the dance floor and the gramophone; `web-notes.png`: the love notes; `web-poster.png`, `web-popcorn.png`: the cinema's poster and treats; `web-sheers.png`, `web-doorway.png`: the sheers with their little lights and the door into the story; `web-quote.png`: the quote board; `web-candles.png`: the petal heart; `web-neon.png`: the neon; `web-dimmer.png`: the dimmer switch; `web-heart-lights.png`, `web-floor-balloons.png`: the light strings and the balloons on the floor; `web-screen.png`, `web-beam.png`, `web-projector.png`, `web-curtains.png`: the screen room; `web-garden*.png`: the garden; the room views show the decor).
 
 ## The walk, room by room
 
@@ -29,12 +32,12 @@ Each room has one part to play, so that by the end she feels loved and wants to 
 
 | Room | Its part | What carries it |
 |---|---|---|
-| Foyer | the invitation | the title wall straight ahead, sheers with little lights, the velvet swag and lanterns at the door where the story begins |
-| Story gallery | how you began | their first photos, in order, each with its label |
-| Heart room | us now, the peak | the collage in its niche, the quote board, the petal heart ringed by candles, the sofa for two, the golden light strings |
+| Foyer | the invitation | the big title wall straight ahead with roses and balloons either side, sheers with little lights, velvet curtains framing the door where the story begins |
+| Story gallery | how it began | its chapter board straight ahead as you come in, their first photos in order, each with its label |
+| Heart room | us now, the peak | the collage in its niche, the quote board, the petal heart ringed by candles, the sofa for two, the golden light strings; the dance floor where the gramophone plays their song |
 | Corridor | a pause | "forever us" in neon |
-| Right gallery | reasons I love you | photos with their labels; its middle is left open |
-| Screen room | moments in motion | their videos on the cinema screen, the loveseat for two |
+| Right gallery | reasons I love you | its chapter board straight ahead as you come in, the love notes hanging over its middle (one per reason), photos with their labels |
+| Screen room | moments in motion | their videos on the cinema screen, the loveseat with popcorn, their "Now Showing" poster |
 | Garden | forever, thank you | the bench for two before the heart of roses (the ending is designed next, with the walk for two) |
 
 ## The museum file
@@ -88,6 +91,7 @@ const petals = [                                              // decor/rosePetal
   createRosePetalHeart(HEART_CENTRE, HEART_WIDTH, { avoid }), // the heart of petals in front of the collage
   createRosePetals(EAST_PATH, { count: 280, roses: 10, seed: 5, avoid }),      // corridor and screen room to the garden door
   createRosePetals(RIGHT_PATH, { count: 100, roses: 4, seed: 9, avoid }),      // into the right gallery
+  createRosePetals(DANCE_RING, { count: 140, roses: 6, seed: 11, avoid }),     // round the dance floor
   createRosePetals(GARDEN_PATH, { count: 220, roses: 8, seed: 3, avoid }),     // to the bench in the garden
 ];
 scene.add(...petals);
@@ -131,6 +135,21 @@ if (beam) scene.add(beam);
 // the quote board (heart room, left of the collage): their quote, names and date from the gift
 await createQuoteBoard(gltf.scene, { quote, names: "Kasun & Nethmi", date: "14 February 2021" });   // decor/quoteBoard.ts
 
+// their initials on the foyer's rug, and each chapter's title (his line under it is optional)
+await createMonogramRug(gltf.scene, { names: "Kasun & Nethmi" });                // decor/monogramRug.ts
+await createChapterBoards(gltf.scene, { story: { line: storyLine }, reasons: { line: reasonsLine } });   // decor/chapterBoards.ts
+
+// the love notes over the right gallery: one card per reason he gave (up to 24; the gift builder offers some to pick)
+scene.add(await createLoveNotes(gltf.scene, reasons));                           // decor/loveNotes.ts
+
+// the gramophone by the dance floor plays their song (or your default track) while they stand on the floor
+const gramophone = await createGramophone(gltf.scene, { song: songUrl, title: songTitle });   // decor/gramophone.ts
+enterButton.addEventListener("click", () => gramophone.unlock());               // browsers start sound only after a tap
+useFrame(({ camera }, delta) => gramophone.update(camera.position, delta));      // and gramophone.dispose() on unmount
+
+// the cinema's "Now Showing" poster: their names and one of their photos (shown whole), once the photos have loaded
+await createMoviePoster(gltf.scene, { names: "Kasun & Nethmi", photo });         // decor/moviePoster.ts
+
 const floors: THREE.Mesh[] = [];
 gltf.scene.traverse((o) => { if ((o as THREE.Mesh).isMesh && o.name.startsWith("floor_") && o.name !== "floor_6_garden") floors.push(o as THREE.Mesh); });
 const reflection = createFloorReflection(gl, scene, floors);  // lighting/floorReflection.ts
@@ -154,9 +173,14 @@ useFrame(({ camera }) => reflection.update(camera));          // runs before R3F
 - `collageWall.ts`: a gallery wall like a real home: frames of different sizes fitted together like a puzzle around the middle (no rows or columns, no big holes), the same small gap between neighbouring frames (`gap`, 5 cm), the whole wall centred in the niche with at least `margin` (10 cm) to the edge. Every photo in exactly the same frame as the single photos; no cast shadows in the lit niche. Photos keep their aspect ratio. The same photos always give the same layout (`seed` gives another arrangement). Laid out once when created (well under 0.2 s); 2 draw calls for all frames and mats plus one per photo.
 - `photoPlaque.ts`: a museum label for a photo: the title in serif capitals, the date in gold, up to three lines of their story in handwriting, on a cream card with a fine gold edge and a soft shadow, as bright as the light on its wall. Hang it under the frame (see above); make one only where the photo has a caption. 1 draw call (not in the floor reflection).
 - `findProps.ts`: `findProps(root, material)` returns the model's furniture meshes of one material (they are merged per material and part of the museum; `userData.prop` is the material).
-- `welcomeSign.ts`: the welcome on the foyer's title wall (the `welcome_board` prop, 2.6 m × 1.6 m in a gold frame, straight ahead as she comes in, in its own spotlight): "Welcome to" in small spaced gold capitals, "The Museum of Us" in calligraphy (Great Vibes), their names in calligraphy, a gold rule with a little heart, the date in gold capitals, and `note` (his words, up to ~30 words) in handwriting (Dancing Script) under it; a fine gold double border. Everything sizes itself to fit the board; the writing keeps clear of the roses on two corners. `title` and `line` change "The Museum of Us" and "Welcome to". Replaces the board's material (no extra draw call).
+- `welcomeSign.ts`: the welcome on the foyer's title wall (the `welcome_board` prop, 4.1 m × 2.3 m in a gold frame, straight ahead as she comes in, in its own spotlight): "Welcome to" in small spaced gold capitals, "The Museum of Us" in calligraphy (Great Vibes), their names in calligraphy, a gold rule with a little heart, the date in gold capitals, and `note` (his words, up to ~30 words) in handwriting (Dancing Script) under it; a fine gold double border. Everything sizes itself to fit the board; the writing keeps clear of the roses on two corners. `title` and `line` change "The Museum of Us" and "Welcome to". Replaces the board's material (no extra draw call).
 - `quoteBoard.ts`: the couple's quote on the board (the `quote_board` prop): calligraphy (Great Vibes) as large as fits, a fine gold double border, a gold rule with a little heart, the names and the date in spaced capitals (Cormorant Garamond). `"\n"` in the quote starts a new line; up to ~45 words fit nicely. The writing keeps clear of the roses on two corners. Replaces the board's material (no extra draw call).
-- `lettering.ts`: the paper, gold border, capitals and heart rule shared by the title wall and the quote board.
+- `chapterBoards.ts`: each chapter's title on its board (the `chapter_story` and `chapter_reasons` props, 2.1 m × 1.2 m, straight ahead as you come into the story gallery and the right gallery, each in its spotlight): the title in calligraphy (Great Vibes; "How It Began" and "Reasons I Love You" unless you give others; a long title breaks into two lines, "\n" breaks it where you like), a gold rule with a little heart, and `line` (up to ~20 words) in handwriting under it if he wrote one. Replaces the boards' materials (no extra draw call).
+- `monogramRug.ts`: their initials woven into the foyer's round ivory rug (the `monogram_rug` prop, 2.6 m across): the two first letters of `names` in gold calligraphy either side of a little red heart, inside a ring of tiny roses and a dusty-rose border with fine gold lines, read from the entrance. Replaces the rug's material (no extra draw call).
+- `loveNotes.ts`: one cream card per reason (up to 24) hanging over the right gallery's open middle on thin red and gold ribbons from the ceiling, above head height (2.2–2.75 m): the reason in handwriting on both sides, a little red heart and its number; each card slowly turns and sways. The model lists where they hang (the `love_notes` marker), in an order that spreads any number of cards over the room. Not baked (`light` matches them to the room); 2 draw calls, animated on the GPU; not in the floor reflection.
+- `gramophone.ts`: the gramophone by the dance floor plays `song` (their song, or your default track) and its record turns (grooves, and a wine-red label with `title`): at full volume while the visitor stands on the dance floor (the `dance_floor` marker and its radius), fading in as they step on and out as they step off, softly up to 5 m from it (on iPhones, whose volume can't be faded, only on the floor); `play()` plays it everywhere, `stop()` goes back. Call `unlock()` from a tap (browsers' rule) and `update(camera.position, delta)` every frame. Each visitor hears it on their own device. No extra draw call.
+- `moviePoster.ts`: the cinema's "Now Showing" poster, glowing in its lightbox (the `poster_face` prop, 0.9 m × 1.33 m, by the way into the screen room): one of their photos whole (never cropped or stretched, as it is, in a fine gold frame), "A Love Story" in calligraphy, "Starring" their names and a tagline, on deep wine red (`title` and `tagline` change the words). Shown as it is, untouched by tone mapping, like the photos. No extra draw call.
+- `lettering.ts`: the paper, gold border, capitals, heart rule, fitting and the board material shared by the title wall, the chapter boards, the rug and the quote board.
 - `fonts.ts`: the three fonts for the title wall, the quote board, the neon and the labels, loaded once from `web/public/fonts` (SIL Open Font License: free for commercial use; keep the OFL files next to them).
 - `footprints.ts`: `getFootprints(root)` reads the `footprint_*` markers in `museum.glb`: every piece standing on the floor, sized to what stands there up to head height (a tree's lower branches too); round pieces (trees, urns, topiaries, side tables) have a circle, the rest a box turned with the piece; rugs are marked walkable. `keepOffFootprints(position, radius, footprints)` moves the visitor out of the solid ones (call it after your movement each frame; keep your wall collision as it is). `isOnFootprint(footprints, x, z)` keeps the petals off rugs and from under furniture.
 - `rosePetals.ts`: `createRosePetals(path)`: petals along a walking route (`[x, z]` floor points, three.js coordinates), ~300 petals + 14 roses for the museum's path; `createRosePetalHeart(centre, width)`: a heart of ~520 petals with 10 roses along its edge (a dense outline, lightly filled), which slowly gathers itself again once she steps more than 2 m away. Options: `count`, `roses`, `seed`, `avoid` (floor spots to keep clear). `update()` each frame: petals within ~45 cm of the visitor's feet are swept aside, hop a few centimetres, spin and settle flat again; roses roll a little. Only nearby petals move (well under 0.1 ms per frame for all three sets), and none drift more than 80 cm from where they were laid.
@@ -167,20 +191,20 @@ They are part of `museum.glb`, modelled in `tools/bake/props.py` and baked with 
 
 | Piece | What | Room | Where |
 |---|---|---|---|
-| `welcome` | title wall (the welcome), in its spotlight | foyer | (4.0, 9.875) |
-| `topiary_foyer_w` | rose topiary | foyer | (2.15, 9.35) |
-| `topiary_foyer_e` | rose topiary | foyer | (5.85, 9.35) |
+| `welcome` | title wall (the welcome), in its spotlight | foyer | (4.45, 9.875) |
+| `topiary_foyer_w` | rose topiary | foyer | (1.95, 9.35) |
+| `topiary_foyer_e` | rose topiary | foyer | (6.95, 9.35) |
+| `balloons_foyer_w` | heart balloons on a gold weight | foyer | (1.9, 8.55) |
+| `balloons_foyer_e` | heart balloons on a gold weight | foyer | (7.0, 8.55) |
+| `rug_foyer` | round rug with their initials | foyer | (4.45, 5.6) |
 | `sheers_foyer_w` | ivory sheers, little lights behind them | foyer | (0.2, 9.6) |
 | `sheers_foyer_e` | ivory sheers, little lights behind them | foyer | (10.875, 1.85) |
-| `swag_foyer` | velvet swag, tied back | foyer | (9.3875, 9.875) |
+| `curtain_foyer_w` | velvet curtain, tied back | foyer | (9.16, 9.875) |
+| `curtain_foyer_e` | velvet curtain, tied back | foyer | (9.16, 9.875) |
 | `pelmet_foyer` | curtain pelmet | foyer | (9.135, 9.875) |
-| `lantern_foyer_w` | lantern | foyer | (8.25, 9.2) |
-| `lantern_foyer_e` | lantern | foyer | (10.4, 9.2) |
-| `palm_foyer_ne` | kentia palm | foyer | (9.9, 7.5) |
 | `ficus_foyer_sw` | weeping fig | foyer | (1.35, 1.15) |
 | `urn_foyer_w` | urn of roses on a pedestal | foyer | (0.72, 3.0) |
 | `urn_foyer_e` | urn of roses on a pedestal | foyer | (10.35, 3.0) |
-| `balloons_foyer` | balloons at the ceiling | foyer | (5.5, 5.3) |
 | `olive_foyer` | olive tree | foyer | (0.95, 9.1) |
 | `fig_foyer` | fig tree | foyer | (10.1, 0.95) |
 | `topiary_story_e` | rose topiary | story gallery | (10.45, 14.5) |
@@ -189,18 +213,19 @@ They are part of `museum.glb`, modelled in `tools/bake/props.py` and baked with 
 | `console_story_2` | console with roses and candles | story gallery | (0.39, 17.15) |
 | `ficus_story_nw` | weeping fig | story gallery | (1.0, 20.0) |
 | `stand_story_ne` | flower stand | story gallery | (10.25, 20.2) |
-| `balloons_story` | balloons at the ceiling | story gallery | (8.2, 18.0) |
+| `chapter_story` | chapter board (chapter_story), in its spotlight | story gallery | (8.7, 20.8) |
+| `balloons_story` | heart balloons on a gold weight | story gallery | (7.05, 20.2) |
 | `sofa_heart` | sofa | heart room | (17.0, 14.3) |
 | `rug_heart` | rug | heart room | (17.0, 15.55) |
 | `coffee_table_heart` | coffee table | heart room | (17.0, 15.75) |
 | `side_table_heart_w` | side table | heart room | (15.5, 14.35) |
 | `side_table_heart_e` | side table | heart room | (18.5, 14.35) |
 | `balloons_sofa` | balloons | heart room | (18.5, 14.35) |
+| `balloons_sofa_w` | balloons | heart room | (15.5, 14.35) |
 | `quote_board` | quote board on its easel | heart room | (13.35, 18.65) |
 | `roses` | grand roses | heart room | (20.6, 18.55) |
 | `ropes_roses` | velvet ropes | heart room | (20.6, 18.55) |
 | `garland` | rose garland round the collage | heart room | (17.0, 20.63) |
-| `balloons_heart` | balloons at the ceiling | heart room | (17.0, 17.3) |
 | `fig_heart_w` | fig tree | heart room | (11.75, 14.3) |
 | `fig_heart_e` | fig tree | heart room | (22.25, 14.3) |
 | `palm_heart_w` | kentia palm | heart room | (12.05, 9.3) |
@@ -211,7 +236,9 @@ They are part of `museum.glb`, modelled in `tools/bake/props.py` and baked with 
 | `lights_heart_en` | string of golden bulbs | heart room | (22.84, 14.4) |
 | `lights_heart_s` | string of golden bulbs | heart room | (11.6, 1.73) |
 | `dimmer_heart` | gold dimmer switch (marker `dimmer_switch`) | heart room | (11.125, 13.7) |
-| `balloons_heart_south` | balloons at the ceiling | heart room | (17.0, 9.0) |
+| `dance_floor` | dance floor in a pool of light (marker `dance_floor`) | heart room | (17.0, 6.2) |
+| `gramophone` | gramophone on a plinth (marker `gramophone`) | heart room | (19.05, 6.2) |
+| `balloons_dance` | heart balloons on a gold weight | heart room | (14.95, 6.2) |
 | `topiary_heart_sw` | rose topiary | heart room | (15.4, 2.25) |
 | `topiary_heart_se` | rose topiary | heart room | (18.6, 2.25) |
 | `olive_heart_sw` | olive tree | heart room | (11.9, 2.4) |
@@ -220,7 +247,9 @@ They are part of `museum.glb`, modelled in `tools/bake/props.py` and baked with 
 | `neon` | neon sign | corridor | (24.75, 1.73) |
 | `lantern_corridor_w` | lantern | corridor | (23.9, 2.0) |
 | `lantern_corridor_e` | lantern | corridor | (25.6, 2.0) |
-| `balloons_right` | balloons at the ceiling | right gallery | (30.4, 15.7) |
+| `chapter_reasons` | chapter board (chapter_reasons), in its spotlight | right gallery | (26.5, 20.8) |
+| `balloons_reasons` | heart balloons on a gold weight | right gallery | (28.3, 20.25) |
+| `love_notes` | where the love notes hang (marker `love_notes`) | right gallery | (30.4, 17.0) |
 | `palm_right` | kentia palm | right gallery | (24.15, 17.2) |
 | `stand_right_1` | flower stand | right gallery | (23.55, 15.9) |
 | `stand_right_2` | flower stand | right gallery | (23.55, 18.5) |
@@ -231,8 +260,9 @@ They are part of `museum.glb`, modelled in `tools/bake/props.py` and baked with 
 | `stand_right_e2` | flower stand | right gallery | (37.2, 18.45) |
 | `loveseat_screen` | loveseat | screen room | (32.25, 7.11) |
 | `rug_screen` | rug | screen room | (32.25, 8.0) |
-| `side_table_screen_w` | side table | screen room | (31.12, 7.15) |
-| `side_table_screen_e` | side table | screen room | (33.38, 7.15) |
+| `side_table_screen_w` | side table with popcorn | screen room | (31.12, 7.15) |
+| `side_table_screen_e` | side table with drinks | screen room | (33.38, 7.15) |
+| `poster` | "Now Showing" poster in a lightbox | screen room | (28.2, 1.7) |
 | `balloons_loveseat` | balloons | screen room | (33.0, 7.11) |
 | `projector` | ceiling projector | screen room | (32.25, 5.0) |
 | `curtain_s` | velvet curtain, tied back | screen room | (37.77, 6.475) |
@@ -270,7 +300,7 @@ They are part of `museum.glb`, modelled in `tools/bake/props.py` and baked with 
 | `bush_garden_*` | 6 × rose bush | garden | round the garden |
 | `lantern_garden_*` | 8 × lantern | garden | along the garden path |
 
-The petal paths and the heart (three.js `[x, z]`), clear of every piece: from the entrance across the foyer, through the story gallery and into the heart room up to the tip of the petal heart (its candles leave a gap there to step in); the heart in front of the collage; from the heart room through the corridor and the screen room to the garden door; from the corridor into the right gallery; in the garden from the door through the arch to the bench.
+The petal paths and the heart (three.js `[x, z]`), clear of every piece: from the entrance across the foyer, through the story gallery and into the heart room up to the tip of the petal heart (its candles leave a gap there to step in); the heart in front of the collage; from the heart room through the corridor and the screen room to the garden door; from the corridor into the right gallery; a ring round the dance floor; in the garden from the door through the arch to the bench.
 
 ```ts
 const PETAL_PATH: [number, number][] = [[5.5, -1.5], [5.5, -3.2], [6.7, -3.6], [7.6, -5.6], [8.6, -7.7], [9.3, -9.4], [9.4, -10.6],
@@ -280,6 +310,8 @@ const HEART_CENTRE: [number, number] = [17.0, -18.6], HEART_WIDTH = 1.9;        
 const EAST_PATH: [number, number][] = [[18.2, -12.0], [20.5, -12.3], [22.6, -12.3], [24.4, -12.1], [24.8, -10.2], [24.8, -7.6], [24.8, -5.2],
   [25.3, -3.5], [27.0, -3.1], [29.0, -3.5], [30.9, -4.4], [33.2, -4.9], [35.3, -5.6], [36.9, -6.3], [37.9, -6.5]];
 const RIGHT_PATH: [number, number][] = [[24.8, -13.2], [26.1, -14.5], [28.0, -15.5], [30.4, -16.3]];
+const DANCE_RING: [number, number][] = Array.from({ length: 25 }, (_, i) =>     // a ring just outside the dance floor's edge
+  [17.0 + 1.55 * Math.cos((i / 24) * Math.PI * 2), -6.2 + 1.55 * Math.sin((i / 24) * Math.PI * 2)]);
 const FLOOR_BALLOON_AREAS: FloorBalloonArea[] = [       // each room's floor (x0, z0, x1, z1) and where the balloons gather
   { rect: [11.4, -20.6, 22.6, -1.9], count: 8, groups: [[13.4, -12.8], [19.8, -4.6]] },         // heart room
   { rect: [23.4, -20.6, 37.6, -13.5], count: 6, groups: [[27.2, -15.4], [34.2, -15.8]] },       // right gallery
@@ -289,11 +321,21 @@ const GARDEN_PATH: [number, number][] = [[38.4, -6.5], [39.9, -6.5], [41.4, -7.4
 
 ## Performance (measured)
 
-Busiest views (1280 × 720, floor reflection pass included): from the foyer through the door into the story gallery ~475 draw calls / ~1.11M triangles (most of them the photo frames beyond the door), the heart room seen across its corner ~390 / ~980k, the foyer ~360 / ~840k, the garden ~100 / ~580k. Phone portrait views: 140–210 draw calls, 370k–740k triangles. Most draw calls are the photo frames (4 each, plus 1 for a label); the furniture and decor are one mesh per material in each part of the museum (out-of-sight parts are culled) and their fine detail (leaves, roses, rugs, glass, the sheers) stays out of the reflection pass. The candle flames, the little lights behind the sheers, balloons, neon, projector beam and sky animate on the GPU and everything is unlit (baked / matcap), so phones stay cool. `museum.glb` is 9.5 MB (meshopt). If a phone struggles: `createFloorReflection(..., { resolution: 0.25 })` first, then `dpr={[1, 1.5]}`.
+Busiest views (1280 × 720, floor reflection pass included): from the foyer through the door into the story gallery ~470 draw calls / ~1.15M triangles (most of them the photo frames beyond the door), the heart room seen across its corner ~395 / ~1.02M, the foyer ~350 / ~890k, the dance floor ~330 / ~900k, the garden ~105 / ~590k. Phone portrait views: 60–210 draw calls, 380k–760k triangles. Most draw calls are the photo frames (4 each, plus 1 for a label); the furniture and decor are one mesh per material in each part of the museum (out-of-sight parts are culled) and their fine detail (leaves, roses, rugs, glass, the sheers, the love notes) stays out of the reflection pass. The candle flames, the little lights behind the sheers, the love notes, balloons, neon, projector beam and sky animate on the GPU and everything is unlit (baked / matcap), so phones stay cool. `museum.glb` is 9.7 MB (meshopt). If a phone struggles: `createFloorReflection(..., { resolution: 0.25 })` first, then `dpr={[1, 1.5]}`.
+
+## What the gift asks for
+
+The gift builder only needs three things; everything else is optional and has a default, so every couple's museum is complete:
+
+- **Required:** both names, the date they met, and at least 25 photos (with fewer, repeat favourites rather than leave a frame empty).
+- **Optional:** his note (title wall), a quote (quote board), photo captions (labels), a line for each chapter (`storyLine`, `reasonsLine`; none: just the title), up to 24 reasons (offer ready ones to tick and let him write his own; none: no notes), their song and its title (none: your default romantic track), the neon's words (default "forever us"), the poster's photo (default: their first photo), video clips (none: a slideshow of their photos).
+- All default words say "you" and "us", so they fit any couple.
 
 ## Remove from earlier versions
 
-- v16's welcome easel, the foyer's console and the foyer's three photo slots (`slot_frame_01`–`03`, with their spots) are gone: the title wall, the sheers and the velvet swag take their places, and `welcomeSign.ts` now writes the title wall. If your app hands photos to slots by name, give those three photos to the collage (or the next free slots). The foyer has no floor balloons any more: use the `FLOOR_BALLOON_AREAS` above (heart room and right gallery).
+- v17's photo places `slot_frame_12` (story gallery) and `slot_frame_27` (right gallery) are gone: the chapter boards hang there. If your app hands photos to slots by name, give those two photos to the collage. The balloons that were at the ceilings (story gallery, heart room, right gallery) now float at eye level, part of `museum.glb` (nothing to change).
+
+- v16's welcome easel, the foyer's console and the foyer's three photo slots (`slot_frame_01`–`03`, with their spots) are gone: the title wall, the sheers and the velvet curtains at the door take their places, and `welcomeSign.ts` now writes the title wall. If your app hands photos to slots by name, give those three photos to the collage (or the next free slots). The foyer has no floor balloons any more: use the `FLOOR_BALLOON_AREAS` above (heart room and right gallery).
 - v16's moon gate and the two urns beside it in the right gallery are gone (its middle is left open); the `RIGHT_PATH` petals still lead in.
 
 - v15's presents in the foyer, the table for two and the light strings outside the heart room are gone, and so is `web/src/lighting/bulbLights.ts`: remove the `createBulbLights` call (the bulbs glow bright gold by themselves now, without halos) and the `HEART_SOUTH_PATH` petals.

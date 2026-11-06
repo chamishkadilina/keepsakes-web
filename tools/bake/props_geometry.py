@@ -15,12 +15,12 @@ def srgb(r, g, b):
 class Parts(dict):
     """One bmesh per material, made on first use: a piece builds into these, add() places and merges them.
     flames: candle flame points (the web lights them); fairies: the little lights behind the foyer's sheer curtains (the
-    web lights them); lights: accent lights for the bake (dicts: pos, colour, watts,
-    kind POINT or AREA, and for AREA size and normal); markers: named points for the web, {name: (position, extras)}
-    (an "aim" extra is a direction)."""
+    web lights them); notes: where the love notes hang ((card middle, ribbon top height); the web hangs them); lights:
+    accent lights for the bake (dicts: pos, colour, watts, kind POINT, AREA or SPOT, for AREA size and normal, for SPOT
+    normal and cone); markers: named points for the web, {name: (position, extras)} (an "aim" extra is a direction)."""
     def __init__(self):
         super().__init__()
-        self.flames, self.fairies, self.lights, self.markers = [], [], [], {}
+        self.flames, self.fairies, self.notes, self.lights, self.markers = [], [], [], [], {}
 
     def __missing__(self, name):
         bm = self[name] = bmesh.new()

@@ -26,6 +26,13 @@ export const EAST_PETALS = { count: 280, roses: 10, seed: 5 }
 export const RIGHT_PATH: [number, number][] = [[24.8, -13.2], [26.1, -14.5], [28.0, -15.5], [30.4, -16.3]]
 export const RIGHT_PETALS = { count: 100, roses: 4, seed: 9 }
 
+/** A ring just outside the dance floor's edge. */
+export const DANCE_RING: [number, number][] = Array.from({ length: 25 }, (_, i) => [
+  17.0 + 1.55 * Math.cos((i / 24) * Math.PI * 2),
+  -6.2 + 1.55 * Math.sin((i / 24) * Math.PI * 2),
+])
+export const DANCE_PETALS = { count: 140, roses: 6, seed: 11 }
+
 /** The garden: from the door through the arch to the bench. */
 export const GARDEN_PATH: [number, number][] = [
   [38.4, -6.5], [39.9, -6.5], [41.4, -7.4], [42.8, -8.6], [44.3, -9.5], [45.8, -9.7], [47.0, -9.1],

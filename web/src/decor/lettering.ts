@@ -1,8 +1,10 @@
+import * as THREE from "three";
 import { SERIF } from "./fonts";
 
 /**
- * Shared lettering for the boards the couple's words are written on (the welcome sign, the quote board): ivory paper
- * with a fine double gold border, lines wrapped to a width, spaced serif capitals and a little gold heart.
+ * Shared lettering for the boards the couple's words are written on (the title wall, the chapter boards, the quote
+ * board): ivory paper with a fine double gold border, lines wrapped to a width, spaced serif capitals, a little gold
+ * heart, and the board's material lit by its own baked light.
  */
 export const INK = "#5a1822", GOLD = "#a8814a", PAPER = "#f6f0e4";
 
@@ -75,4 +77,29 @@ export function heartRule(g: CanvasRenderingContext2D, x: number, y: number, hal
     g.stroke();
   }
   heart(g, x, y, size);
+}
+
+/** Sets the largest font (from `size` down) at which `text` is no wider than `width`; returns that size. */
+export function fit(g: CanvasRenderingContext2D, text: string, font: (size: number) => string, size: number, width: number): number {
+  g.font = font(size);
+  const w = g.measureText(text).width;
+  if (w > width) { size = Math.floor(size * width / w); g.font = font(size); }
+  return size;
+}
+
+/** A board hung on a wall: its face's width over its height, from its mesh. */
+export function boardAspect(board: THREE.Mesh): number {
+  board.updateWorldMatrix(true, false);
+  const size = new THREE.Box3().setFromObject(board).getSize(new THREE.Vector3());
+  return Math.max(size.x, size.z) / size.y;
+}
+
+/** The board's material once written: the canvas (its UVs span the whole face), lit by the board's own baked light. */
+export function boardMaterial(root: THREE.Object3D, canvas: HTMLCanvasElement): THREE.MeshBasicMaterial {
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.flipY = false;                                                       // glTF UV convention
+  texture.anisotropy = 8;
+  const intensity = (root.userData.lightmapIntensity as number | undefined) ?? 1;
+  return new THREE.MeshBasicMaterial({ map: texture, color: new THREE.Color(intensity, intensity, intensity), vertexColors: true });
 }
