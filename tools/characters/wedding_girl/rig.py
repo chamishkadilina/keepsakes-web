@@ -34,22 +34,8 @@ for s, sg in (("l", 1), ("r", -1)):
         top = 1.31 - (sx - 0.15) * 0.267 - 0.03
         parent = f"upperarm_{s}" if sx < 0.33 else f"lowerarm_{s}"
         BONES += [(f"sleeve_{k}_1_{s}", (sx * sg, -0.02, top), (sx * sg, -0.02, top - 0.2), parent),
-                  (f"sleeve_{k}_2_{s}", (sx * sg, -0.02, top - 0.2), (sx * sg, -0.02, top - 0.42), f"sleeve_{k}_1_{s}")]
-arm_data = bpy.data.armatures.new("Armature")
-arm = bpy.data.objects.new("Armature", arm_data)
-scene.collection.objects.link(arm)
-bpy.context.view_layer.objects.active = arm
-bpy.ops.object.mode_set(mode="EDIT")
-for name, h, t, parent in BONES:
-    eb = arm_data.edit_bones.new(name)
-    eb.head, eb.tail = h, t
-    if name.startswith(("thigh", "calf", "foot", "ball", "pelvis", "spine", "neck", "head")):
-        eb.align_roll(Vector((0, -1, 0)))
-    if parent:
-        eb.parent = arm_data.edit_bones[parent]
-bpy.ops.object.mode_set(mode="OBJECT")
-
-# ------------------------------------------------------------------------------------------------ weights
+                  (f"sleeve_{k}_2_{s}", (sx * sg, -0.02, top - 0.2), (sx * sg, -0.02, top - 0.42), f"sleeve_{k}_1_{s}"),
+                  (f"sleeve_{k}_end_{s}", (sx * sg, -0.02, top - 0.42), (sx * sg, -0.02, top - 0.46), f"sleeve_{k}_2_{s}")]
 import bmesh                                       # the simplified mesh joins her two boot toes: part them
 bm = bmesh.new(); bm.from_mesh(girl.data)
 bridge = [f for f in bm.faces if max(v.co.z for v in f.verts) < 0.13 and max(abs(v.co.x) for v in f.verts) < 0.01]
@@ -59,39 +45,8 @@ print("parted", len(bridge), "faces between her boots")
 co = np.empty(len(girl.data.vertices) * 3); girl.data.vertices.foreach_get("co", co); co = co.reshape(-1, 3)
 segs = {name: (np.array(h, float), np.array(t, float)) for name, h, t, p in BONES if name != "Root"}
 
-
-def dist(name):
-    a, b = segs[name]
-    ab = b - a
-    t = np.clip(((co - a) @ ab) / (ab @ ab), 0, 1)
-    return np.linalg.norm(co - (a + t[:, None] * ab), axis=1)
-
-
-names = list(segs)
-D = np.stack([dist(n) for n in names], 1)
 x, y, z = co[:, 0], co[:, 1], co[:, 2]
 ax = np.abs(x)
-allow = np.ones_like(D, bool)
-for j, n in enumerate(names):
-    if n.startswith(("clavicle", "upperarm", "lowerarm", "hand")):
-        allow[:, j] = ((z > 0.95) | (ax > 0.2) & (z > 0.6)) & (np.sign(x) == (1 if n.endswith("_l") else -1))
-        if n.startswith(("upperarm", "lowerarm", "hand")):
-            allow[:, j] &= ax > 0.13
-    if n.startswith("sleeve"):
-        allow[:, j] = False
-    if n.startswith(("thigh", "calf", "foot", "ball")):
-        allow[:, j] = (z < 0.9) & (np.sign(x) == (1 if n.endswith("_l") else -1))
-sleeve = (ax > 0.2) & (z < 1.25) & ((z > 0.9) | (ax > 0.29))   # her hanging sleeves (not her dress's sides)
-for j, n in enumerate(names):
-    if sleeve.any() and not n.startswith(("upperarm", "lowerarm", "hand")):
-        allow[sleeve, j] = False
-hair = ((z > 1.36) & (ax < 0.17)) | ((y > 0.045) & (z > 1.0) & (ax < 0.17))   # her hair beside and behind her
-for j, n in enumerate(names):
-    if hair.any() and n not in ("spine_02", "spine_03", "neck_01", "head"):
-        allow[hair, j] = False
-D = np.where(allow, D, 9.0)
-W = 1.0 / np.maximum(D, 0.008) ** 4
-W[~allow] = 0
 # her dress: away from her legs it hangs from her hips and only follows her thighs a little
 def leg_gap(s):
     """How far outside her leg's own surface (thigh, calf, boot) each vertex is."""
@@ -107,6 +62,80 @@ gap = np.minimum(leg_gap("l"), leg_gap("r"))
 skirt = np.clip((gap - 0.006) / 0.02, 0, 1) * (z < 0.86)
 boots = (z < 0.17) & (ax < 0.09) & (y > -0.16) & (y < 0.07)        # her boots, heels and soles are hers, not the dress's
 skirt[boots] = 0
+
+# her dress hangs on chains of bones around her hips, swung in the web by a light cloth simulation
+CH = 16
+dress = skirt > 0.5
+radial = np.hypot(co[:, 0], co[:, 1] + 0.02)
+around = np.arctan2(co[:, 1] + 0.02, co[:, 0])
+CHAINS = []                                                      # (index, angle, hem height)
+for k in range(CH):
+    a = 2 * np.pi * k / CH
+    sel = dress & (np.abs(np.angle(np.exp(1j * (around - a)))) < np.pi / CH * 1.3)
+    if sel.sum() < 30:
+        continue
+    hem = np.percentile(co[sel, 2], 3)
+    if 0.86 - hem < 0.12:
+        continue
+    pts, r = [], np.median(radial[sel & (z > 0.75)]) * 0.9
+    for f in (0, 1 / 3, 2 / 3, 1):
+        zt = 0.86 - f * (0.86 - hem)
+        band = sel & (np.abs(z - zt) < 0.03)
+        if band.sum() > 3:
+            r = np.median(radial[band]) * 0.9
+        pts.append((r * np.cos(a), -0.02 + r * np.sin(a), zt))
+    end = np.array(pts[3]) + (np.array(pts[3]) - np.array(pts[2])) / np.linalg.norm(np.subtract(pts[3], pts[2])) * 0.03
+    BONES += [(f"skirt_{k}_1", pts[0], pts[1], "pelvis"), (f"skirt_{k}_2", pts[1], pts[2], f"skirt_{k}_1"),
+              (f"skirt_{k}_3", pts[2], pts[3], f"skirt_{k}_2"), (f"skirt_{k}_end", pts[3], tuple(end), f"skirt_{k}_3")]
+    CHAINS.append((k, a, hem))
+print("dress chains", len(CHAINS))
+arm_data = bpy.data.armatures.new("Armature")
+arm = bpy.data.objects.new("Armature", arm_data)
+scene.collection.objects.link(arm)
+bpy.context.view_layer.objects.active = arm
+bpy.ops.object.mode_set(mode="EDIT")
+for name, h, t, parent in BONES:
+    eb = arm_data.edit_bones.new(name)
+    eb.head, eb.tail = h, t
+    if name.startswith(("thigh", "calf", "foot", "ball", "pelvis", "spine", "neck", "head")):
+        eb.align_roll(Vector((0, -1, 0)))
+    if parent:
+        eb.parent = arm_data.edit_bones[parent]
+bpy.ops.object.mode_set(mode="OBJECT")
+
+# ------------------------------------------------------------------------------------------------ weights
+
+
+def dist(name):
+    a, b = segs[name]
+    ab = b - a
+    t = np.clip(((co - a) @ ab) / (ab @ ab), 0, 1)
+    return np.linalg.norm(co - (a + t[:, None] * ab), axis=1)
+
+
+names = [n for n, h, t, p in BONES if n != "Root"]
+D = np.stack([dist(n) if n in segs else np.full(len(co), 9.0) for n in names], 1)
+allow = np.ones_like(D, bool)
+for j, n in enumerate(names):
+    if n.startswith(("clavicle", "upperarm", "lowerarm", "hand")):
+        allow[:, j] = ((z > 0.95) | (ax > 0.2) & (z > 0.6)) & (np.sign(x) == (1 if n.endswith("_l") else -1))
+        if n.startswith(("upperarm", "lowerarm", "hand")):
+            allow[:, j] &= ax > 0.13
+    if n.startswith(("sleeve", "skirt")):
+        allow[:, j] = False
+    if n.startswith(("thigh", "calf", "foot", "ball")):
+        allow[:, j] = (z < 0.9) & (np.sign(x) == (1 if n.endswith("_l") else -1))
+sleeve = (ax > 0.2) & (z < 1.25) & ((z > 0.9) | (ax > 0.29))   # her hanging sleeves (not her dress's sides)
+for j, n in enumerate(names):
+    if sleeve.any() and not n.startswith(("upperarm", "lowerarm", "hand")):
+        allow[sleeve, j] = False
+hair = ((z > 1.36) & (ax < 0.17)) | ((y > 0.045) & (z > 1.0) & (ax < 0.17))   # her hair beside and behind her
+for j, n in enumerate(names):
+    if hair.any() and n not in ("spine_02", "spine_03", "neck_01", "head"):
+        allow[hair, j] = False
+D = np.where(allow, D, 9.0)
+W = 1.0 / np.maximum(D, 0.008) ** 4
+W[~allow] = 0
 pel = names.index("pelvis")
 legs = [j for j, n in enumerate(names) if n.startswith(("thigh", "calf", "foot", "ball"))]
 W = W / np.maximum(W.sum(1, keepdims=True), 1e-12)
@@ -124,9 +153,28 @@ for sd, sg in (("l", 1), ("r", -1)):                            # the drape hang
         W[:, names.index(f"sleeve_{k}_1_{sd}")] += hang * wk * (1 - down)
         W[:, names.index(f"sleeve_{k}_2_{sd}")] += hang * wk * down
 before = W[:, legs].sum(1)
-for j in legs:                                     # her dress follows her thighs a little, never her calves or feet
-    W[:, j] *= 1 - skirt * (0.75 if names[j].startswith("thigh") else 1.0)
+for j in legs:                                     # her dress doesn't follow her legs: the cloth simulation does
+    W[:, j] *= 1 - skirt
 W[:, pel] += before - W[:, legs].sum(1)
+angs = np.array([c[1] for c in CHAINS]); hems = np.array([c[2] for c in CHAINS])
+order_c = np.argsort(angs); angs, hems = angs[order_c], hems[order_c]; ids = [CHAINS[i][0] for i in order_c]
+ext = np.r_[angs, angs[0] + 2 * np.pi]
+th = (around - angs[0]) % (2 * np.pi) + angs[0]
+i0 = np.clip(np.searchsorted(ext, th, side="right") - 1, 0, len(angs) - 1)
+i1 = (i0 + 1) % len(angs)
+t1 = (th - ext[i0]) / (ext[i0 + 1] - ext[i0])
+hem_v = hems[i0] * (1 - t1) + hems[i1] * t1
+fz = np.clip((0.86 - z) / np.maximum(0.86 - hem_v, 0.05), 0, 1)
+move = W[:, pel] * skirt * (z < 0.86)
+W[:, pel] -= move
+seg_w = np.stack([np.clip(1 - np.abs(fz - (j + 0.5) / 3) * 3, 0, 1) for j in range(3)], 1)
+seg_w[fz < 1 / 6, 0] = 1; seg_w[fz > 5 / 6, 2] = 1
+seg_w /= seg_w.sum(1, keepdims=True)
+for side_i, wa in ((i0, 1 - t1), (i1, t1)):
+    for c in range(len(ids)):
+        on = side_i == c
+        for j in range(3):
+            W[on, names.index(f"skirt_{ids[c]}_{j + 1}")] += (move * wa * seg_w[:, j])[on]
 W = W / W.sum(1, keepdims=True)
 # smooth along the mesh so seams and folds bend together
 edges = np.array([e.vertices[:] for e in girl.data.edges])
@@ -220,7 +268,7 @@ def bring(name, folder, clip):
         if nxt is not None:
             send = srest[INV[nxt.name]].translation
         else:                                                       # ends: the clip's "Nub" marks the tip
-            nub = next((c for c in sbones[sname].children if c.name.endswith("Nub")), None)
+            nub = next((c for c in sbones[sname].children if c.name.endswith(("Nub", "Finger2"))), None)
             if nub is None:
                 line[tname] = Matrix.Identity(3)
                 continue
