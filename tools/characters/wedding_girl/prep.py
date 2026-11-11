@@ -1,5 +1,5 @@
-"""Her source made ready: upright, facing -Y (Blender front), 1.64 m, and a light copy for the web.
-python -I prep.py -- src.blend out.blend ratio"""
+"""Her source made ready: upright, facing -Y (Blender front), 1.64 m, and a light copy for the web that keeps more of
+her face and hands. python -I prep.py -- src.blend out.blend body_ratio,detail_ratio"""
 import sys, math, time
 import bpy
 import numpy as np
@@ -26,11 +26,38 @@ low = hi.copy()
 low.data = hi.data.copy()
 low.name = low.data.name = "Girl"
 scene.collection.objects.link(low)
+# simplified in two passes, so her face and hands keep more of their shape than her dress needs
+
+
+def detail_of(me):
+    co = np.empty(len(me.vertices) * 3)
+    me.vertices.foreach_get("co", co)
+    x, y, z = co.reshape(-1, 3).T
+    face = np.clip((z - 1.40) / 0.03, 0, 1) * np.clip((0.02 - y) / 0.03, 0, 1) * (np.abs(x) < 0.1)
+    hands = np.clip((np.abs(x) - 0.455) / 0.02, 0, 1) * (z > 1.1)
+    return np.maximum(face, hands)
+
+
+def simplify(ratio, weights):
+    """Collapse to `ratio` of the faces; only where weights are 1 (anything less is kept)."""
+    low.vertex_groups.clear()
+    g = low.vertex_groups.new(name="simplify")
+    w = np.round(weights, 2)
+    for value in np.unique(w):
+        g.add(np.where(w == value)[0].tolist(), float(value), "REPLACE")
+    mod = low.modifiers.new("dec", "DECIMATE")
+    mod.ratio, mod.vertex_group, mod.use_collapse_triangulate = ratio, "simplify", True
+    with bpy.context.temp_override(object=low, active_object=low):
+        bpy.ops.object.modifier_apply(modifier="dec")
+
+
 t = time.time()
-mod = low.modifiers.new("dec", "DECIMATE")
-mod.ratio = float(ratio)
-mod.use_collapse_triangulate = True
-with bpy.context.temp_override(object=low, active_object=low):
-    bpy.ops.object.modifier_apply(modifier="dec")
-print("decimated to", len(low.data.polygons), "tris in", round(time.time() - t), "s")
+BODY, DETAIL = (float(v) for v in ratio.split(","))
+simplify(BODY, 1 - detail_of(low.data))                            # everything but her face and hands
+simplify(DETAIL, detail_of(low.data))                              # then those, more gently
+low.vertex_groups.clear()
+me = low.data
+co = np.empty(len(me.vertices) * 3); me.vertices.foreach_get("co", co); co = co.reshape(-1, 3)
+print("simplified to", len(me.polygons), "tris in", round(time.time() - t), "s; hand verts", int((np.abs(co[:, 0]) > 0.47).sum()),
+      "face verts", int(((co[:, 2] > 1.42) & (co[:, 1] < 0.0) & (np.abs(co[:, 0]) < 0.09)).sum()))
 bpy.ops.wm.save_as_mainfile(filepath=dst)

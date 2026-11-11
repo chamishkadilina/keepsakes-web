@@ -4,6 +4,7 @@ import { useGift } from '../gift/gift'
 import { assignPhotos } from './assignPhotos'
 import { Collage } from './Collage'
 import { FramedPhoto } from './FramedPhoto'
+import { setPhotoSpots } from './photoSpots'
 import { findSlots } from './slots'
 
 /** Fills the museum with the gift's photos (BUILD_SPEC §5): the collage niche and every gallery frame. */
@@ -22,6 +23,11 @@ export function Gallery({ scene }: { scene: THREE.Object3D }) {
   useEffect(() => {
     slots.planes.forEach((plane) => (plane.visible = false))
   }, [slots])
+
+  useEffect(() => {
+    setPhotoSpots(content?.frames.map(({ slot }) => slot) ?? [])
+    return () => setPhotoSpots([])
+  }, [content])
 
   if (!content) return null
   return (

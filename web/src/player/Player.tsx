@@ -3,10 +3,12 @@ import { useFrame } from '@react-three/fiber'
 import { CapsuleCollider, RigidBody, useBeforePhysicsStep, useRapier, type RapierRigidBody } from '@react-three/rapier'
 import type { Collider, KinematicCharacterController } from '@dimforge/rapier3d-compat'
 import type { Group, Material, Mesh } from 'three'
+import { MAX_SPEED } from '../characters/character'
 import { useGirl } from '../characters/useGirl'
-import { MOVEMENT, PHYSICS, PLAYER } from '../config/gameFeel'
+import { GAZE, MOVEMENT, PHYSICS, PLAYER } from '../config/gameFeel'
+import { nearestPhoto } from '../gallery/photoSpots'
 import { resetLook } from '../input/input'
-import { dampAngle } from '../lib/smoothing'
+import { turnAngle } from '../lib/smoothing'
 import { useWalk, visitorFeet } from '../store'
 import { GARDEN, roomAt } from '../world/rooms'
 import { cameraYaw, resetRig, updateCamera } from './cameraRig'
@@ -85,7 +87,7 @@ export function Player() {
 
     v.getWorldPosition(visitorFeet)
     visitorFeet.y -= CAPSULE_CENTER
-    v.rotation.y = dampAngle(v.rotation.y, state.current.heading, MOVEMENT.turnTime, dt)
+    v.rotation.y = turnAngle(v.rotation.y, state.current.heading, MOVEMENT.turnTime, MOVEMENT.turnSpeed, dt)
 
     const aspect = frame.size.width / frame.size.height
     const motion = state.current.motion
@@ -96,7 +98,9 @@ export function Player() {
     v.visible = opacity.current > 0.01
 
     if (girl) {
-      girl.move(motion.speed)
+      const groundSpeed = Math.min(state.current.groundSpeed, MAX_SPEED)
+      girl.move(groundSpeed)
+      girl.lookAt(groundSpeed < GAZE.stillBelow ? nearestPhoto(visitorFeet, GAZE.photoReach) : null)
       girl.update(dt)
     }
   })

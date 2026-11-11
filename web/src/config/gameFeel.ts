@@ -3,16 +3,19 @@
  * change values here (and in that file), nowhere else.
  * Times are "seconds to reach ~95% of the way".
  */
+import { MAX_SPEED, WALK_SPEED } from '../characters/character'
+
 const DEG = Math.PI / 180
 
 /** §1 Movement */
 export const MOVEMENT = {
-  walkSpeed: 2.2, // m/s (owner approved)
-  runSpeed: 4.0, // m/s, Shift (owner approved)
+  walkSpeed: WALK_SPEED, // m/s: her natural walk (1.0)
+  runSpeed: MAX_SPEED, // m/s, Shift: her brisk walk (1.75), never faster
   speedUpTime: 0.25, // s, eased in and out
   slowDownTime: 0.2, // s, eased, no sliding
   stopBelowSpeed: 0.02, // m/s: snap to a stop under this when there is no input
-  turnTime: 0.12, // s to face the movement direction
+  turnTime: 0.12, // s: eases the end of a turn to face the movement direction
+  turnSpeed: 8, // rad/s: never turns faster than this
   runMinPush: 0.5, // joystick push needed for Shift-run to count as running
   stepHeight: 0.2, // m
   stepMinWidth: 0.15, // m of free floor needed on top of a step
@@ -22,6 +25,12 @@ export const MOVEMENT = {
   gravity: 20, // m/s²
   maxFallSpeed: 30, // m/s
   fallResetHeight: -10, // m: below this, back to the entrance
+}
+
+/** Where she looks */
+export const GAZE = {
+  photoReach: 3, // m: standing within this of a photo, she looks at it
+  stillBelow: 0.05, // m/s: slower than this over the floor counts as standing
 }
 
 /** Collision capsule; her character (girl.glb) stands in it. */
