@@ -1,6 +1,6 @@
 # Assets
 
-Every external asset used in the project. Allowed licenses: CC0, Pixabay License, SIL OFL, MIT/ISC.
+Every external asset used in the project. Allowed licenses: CC0, Pixabay License, SIL OFL, MIT/ISC. Exception (owner approved 2026-11-11): `girl.glb`'s character, CGTrader Royalty Free License; kept out of git (`.gitignore`).
 
 | File | Source URL | Author | License |
 |---|---|---|---|
@@ -39,3 +39,5 @@ Every external asset used in the project. Allowed licenses: CC0, Pixabay License
 | `web/public/fonts/dancing-script-latin-500-normal.woff2` | https://fonts.google.com/specimen/Dancing+Script | Impallari Type | SIL OFL (`OFL-DancingScript.txt`) |
 | `web/public/fonts/great-vibes-latin-400-normal.woff2` | https://fonts.google.com/specimen/Great+Vibes | TypeSETit | SIL OFL (`OFL-GreatVibes.txt`) |
 | `web/public/fonts/cormorant-garamond-latin-600-normal.woff2` | https://fonts.google.com/specimen/Cormorant+Garamond | Christian Thalmann | SIL OFL (`OFL-CormorantGaramond.txt`) |
+| `web/public/models/girl.glb` (character: White Wedding Dress Girl) | https://www.cgtrader.com/items/7216835 | FERUL | CGTrader Royalty Free License (`girl-LICENSE.txt`) |
+| `web/public/models/girl.glb` (idle + walk motion) | https://github.com/microsoft/Microsoft-Rocketbox | Microsoft | MIT (`girl-LICENSE.txt`) |

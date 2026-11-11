@@ -26,10 +26,11 @@ export const EAST_PETALS = { count: 280, roses: 10, seed: 5 }
 export const RIGHT_PATH: [number, number][] = [[24.8, -13.2], [26.1, -14.5], [28.0, -15.5], [30.4, -16.3]]
 export const RIGHT_PETALS = { count: 100, roses: 4, seed: 9 }
 
-/** A ring just outside the dance floor's edge. */
+/** A ring just outside the dance floor's edge (floor radius 1.8, ring 0.4 beyond it). */
+const DANCE_RING_RADIUS = 1.8 + 0.4
 export const DANCE_RING: [number, number][] = Array.from({ length: 25 }, (_, i) => [
-  17.0 + 1.55 * Math.cos((i / 24) * Math.PI * 2),
-  -6.2 + 1.55 * Math.sin((i / 24) * Math.PI * 2),
+  17.0 + DANCE_RING_RADIUS * Math.cos((i / 24) * Math.PI * 2),
+  -6.2 + DANCE_RING_RADIUS * Math.sin((i / 24) * Math.PI * 2),
 ])
 export const DANCE_PETALS = { count: 140, roses: 6, seed: 11 }
 

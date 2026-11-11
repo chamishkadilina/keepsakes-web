@@ -25,7 +25,7 @@ export type Gift = {
   finalWords: string
   storyLine?: string // under the title of the story gallery's chapter board, up to ~20 words
   reasonsLine?: string // under the title of the right gallery's chapter board, up to ~20 words
-  reasons?: string[] // the love notes in the right gallery, up to 24
+  reasons?: string[] // the love notes in the right gallery, 4 to 10
   song?: string // their song, an mp3 or m4a URL, for the gramophone
   songTitle?: string // on the record's label
   posterPhoto?: string // the cinema poster's photo URL; default: their first photo

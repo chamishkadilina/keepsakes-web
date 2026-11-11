@@ -24,6 +24,9 @@ type WalkState = {
 /** Her feet, moved by Player every frame. Not in the store: that would re-render every frame. */
 export const visitorFeet = new Vector3()
 
+/** The video player sets this while a video plays on the cinema screen: the screen room dims. */
+export const useCinema = create<{ videoPlaying: boolean }>(() => ({ videoPlaying: false }))
+
 export const useWalk = create<WalkState>((set, get) => ({
   loaded: false,
   spawn: [0, 0, 0], // replaced by spawn_her when the museum loads

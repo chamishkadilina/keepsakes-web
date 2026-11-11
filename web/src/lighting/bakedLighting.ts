@@ -60,6 +60,7 @@ export async function applyBakedLighting(root: THREE.Object3D, lightmapsUrl: str
   const gold = createGoldMaterial();
   const glass = createGlassMaterial();
   const glow = new THREE.MeshBasicMaterial({ color: 0xfff0d8, toneMapped: false });
+  glow.name = "lens_glow";                                    // stays bright when the cinema dims (cinemaLights.ts)
   const bulbs = new THREE.MeshMatcapMaterial({ matcap: createBulbMatcap(), toneMapped: false });
   const sheer = createSheerMaterial();
   const screen = new THREE.MeshBasicMaterial({ color: new THREE.Color(SCREEN_WHITE, SCREEN_WHITE, SCREEN_WHITE * 0.98) });

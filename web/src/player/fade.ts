@@ -1,4 +1,4 @@
-import type { MeshBasicMaterial } from 'three'
+import type { Material } from 'three'
 import { CAMERA } from '../config/gameFeel'
 import { damp } from '../lib/smoothing'
 
@@ -8,14 +8,20 @@ export function fadeOpacity(current: number, cameraDistance: number, dt: number)
   return current + (target - current) * damp(CAMERA.fadeTime, dt)
 }
 
+type Look = { opacity: number; transparent: boolean; depthWrite: boolean }
+const looks = new WeakMap<Material, Look>() // each material as it was made (some are see-through by design)
+
 /** Applies opacity; switches to transparent rendering only while faded. */
-export function setOpacity(materials: MeshBasicMaterial[], opacity: number) {
-  const solid = opacity > 0.99
+export function setOpacity(materials: Material[], opacity: number) {
+  const faded = opacity <= 0.99
   for (const m of materials) {
-    m.opacity = opacity
-    if (m.transparent === solid) {
-      m.transparent = !solid
-      m.depthWrite = solid
+    let look = looks.get(m)
+    if (!look) looks.set(m, (look = { opacity: m.opacity, transparent: m.transparent, depthWrite: m.depthWrite }))
+    m.opacity = look.opacity * opacity
+    const transparent = look.transparent || faded
+    if (m.transparent !== transparent) {
+      m.transparent = transparent
+      m.depthWrite = faded ? false : look.depthWrite
       m.needsUpdate = true
     }
   }

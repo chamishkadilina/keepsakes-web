@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useWalk } from '../store'
+import { Credits } from './Credits'
 
 function format(ms: number) {
   const s = Math.floor(ms / 1000)
@@ -42,7 +43,10 @@ export function Hud() {
           <div ref={timeRef} className={done ? 'hud-time done' : 'hud-time'}>0:00</div>
           <div className="hud-room">{done ? 'Reached the garden 🌹' : room}</div>
         </div>
-        <button onClick={restart}>Restart</button>
+        <div className="hud-buttons">
+          <Credits />
+          <button onClick={restart}>Restart</button>
+        </div>
       </div>
       {hint && (
         <div className="hint">

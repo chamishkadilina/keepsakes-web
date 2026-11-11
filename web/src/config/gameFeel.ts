@@ -24,7 +24,7 @@ export const MOVEMENT = {
   fallResetHeight: -10, // m: below this, back to the entrance
 }
 
-/** Placeholder capsule until characters arrive. */
+/** Collision capsule; her character (girl.glb) stands in it. */
 export const PLAYER = {
   radius: 0.3, // m
   halfHeight: 0.6, // m: total height = 2 × (0.6 + 0.3) = 1.8 m

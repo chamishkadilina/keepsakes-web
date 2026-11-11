@@ -18,7 +18,7 @@ import {
   RIGHT_PATH,
   RIGHT_PETALS,
 } from '../config/route'
-import { animateBalloons } from '../decor/balloons'
+import { animateBalloons, type FloatingBalloons } from '../decor/balloons'
 import { createChapterBoards } from '../decor/chapterBoards'
 import { createFloorBalloons, type FloorBalloons } from '../decor/floorBalloons'
 import { getFootprints, isOnFootprint } from '../decor/footprints'
@@ -32,12 +32,13 @@ import { Gallery } from '../gallery/Gallery'
 import { DEFAULT_QUOTE, NEON_TEXT, useGift, type Gift } from '../gift/gift'
 import { applyBakedLighting } from '../lighting/bakedLighting'
 import { createCandleFlames } from '../lighting/candleFlames'
+import { createCinemaLights, type CinemaLights } from '../lighting/cinemaLights'
 import { addCeilingLights } from '../lighting/ceilingLights'
 import { createCurtainLights } from '../lighting/curtainLights'
 import { createDuskSky } from '../lighting/duskSky'
 import { createFloorReflection } from '../lighting/floorReflection'
 import { createProjectorBeam } from '../lighting/projectorBeam'
-import { useWalk, visitorFeet } from '../store'
+import { useCinema, useWalk, visitorFeet } from '../store'
 import { disposeDrawn } from './disposeDrawn'
 import { useGiftDecor } from './useGiftDecor'
 import { useMuseumColliders } from './useMuseumColliders'
@@ -54,18 +55,20 @@ type Decor = {
   beam: THREE.Group | null
   petals: RosePetals[]
   floorBalloons: FloorBalloons
+  balloons: FloatingBalloons
+  cinema: CinemaLights
 }
 
 /** Baked light, the ceiling lamps, then the balloons, which float in the baked materials (design/lighting.md). */
-async function light(scene: THREE.Object3D): Promise<void> {
+async function light(scene: THREE.Object3D): Promise<FloatingBalloons> {
   await applyBakedLighting(scene, LIGHTING.lightmapDir)
   addCeilingLights(scene)
-  animateBalloons(scene)
+  return animateBalloons(scene)
 }
 
 // Once per loaded scene (React may run effects twice; this must not apply twice).
-const lit = new WeakMap<THREE.Object3D, Promise<void>>()
-function lightOnce(scene: THREE.Object3D): Promise<void> {
+const lit = new WeakMap<THREE.Object3D, Promise<FloatingBalloons>>()
+function lightOnce(scene: THREE.Object3D): Promise<FloatingBalloons> {
   if (!lit.has(scene)) lit.set(scene, light(scene))
   return lit.get(scene)!
 }
@@ -100,23 +103,30 @@ function writeWordsOnce(scene: THREE.Object3D, gift: Gift): Promise<void> {
   return written.get(scene)!
 }
 
-/** What stands beside the model: the candle flames, the little lights behind the sheers, the dusk sky, the projector's beam, and the petals and floor balloons, clear of the furniture. */
-function createDecor(scene: THREE.Object3D, footprints: ReturnType<typeof getFootprints>): Decor {
+/**
+ * What stands beside the model: the candle flames, the little lights behind the sheers, the dusk sky, the projector's beam,
+ * and the petals and floor balloons, clear of the furniture. Also the cinema's dimming, on the model and the petals: after
+ * the floor reflection, before the Gallery mounts (the couple's photos are never dimmed).
+ */
+function createDecor(scene: THREE.Object3D, footprints: ReturnType<typeof getFootprints>, balloons: FloatingBalloons): Decor {
   const avoid = (x: number, z: number) => isOnFootprint(footprints, x, z)
+  const petals = [
+    createRosePetals(PETAL_PATH, { avoid }),
+    createRosePetalHeart(HEART_CENTRE, HEART_WIDTH, { avoid }),
+    createRosePetals(EAST_PATH, { ...EAST_PETALS, avoid }),
+    createRosePetals(RIGHT_PATH, { ...RIGHT_PETALS, avoid }),
+    createRosePetals(DANCE_RING, { ...DANCE_PETALS, avoid }),
+    createRosePetals(GARDEN_PATH, { ...GARDEN_PETALS, avoid }),
+  ]
   return {
     flames: createCandleFlames(scene),
     curtainLights: createCurtainLights(scene),
     sky: createDuskSky(),
     beam: createProjectorBeam(scene),
-    petals: [
-      createRosePetals(PETAL_PATH, { avoid }),
-      createRosePetalHeart(HEART_CENTRE, HEART_WIDTH, { avoid }),
-      createRosePetals(EAST_PATH, { ...EAST_PETALS, avoid }),
-      createRosePetals(RIGHT_PATH, { ...RIGHT_PETALS, avoid }),
-      createRosePetals(DANCE_RING, { ...DANCE_PETALS, avoid }),
-      createRosePetals(GARDEN_PATH, { ...GARDEN_PETALS, avoid }),
-    ],
+    petals,
     floorBalloons: createFloorBalloons(FLOOR_BALLOON_AREAS, { footprints }),
+    balloons,
+    cinema: createCinemaLights(scene, ...petals),
   }
 }
 
@@ -133,7 +143,7 @@ function woodFloors(scene: THREE.Object3D): THREE.Mesh[] {
  * ceiling lamps and floor reflection (design/lighting.md), adds the candle flames,
  * the little lights behind the sheers, the dusk sky, the projector's beam, the rose petals and the
  * floor balloons, floats the heart balloons, writes their words, and reports where
- * she starts and the footprints. The love notes and the gramophone: useGiftDecor.
+ * she starts and the footprints. The love notes: useGiftDecor.
  * Colliders: useMuseumColliders. Photos and frames: Gallery.
  * Never builds geometry itself.
  */
@@ -143,6 +153,7 @@ export function Museum() {
   const root = useThree((s) => s.scene)
   const [decor, setDecor] = useState<Decor | null>(null)
   const gift = useGift((s) => s.gift)
+  const videoPlaying = useCinema((s) => s.videoPlaying)
   const reflection = useRef<FloorReflection | null>(null)
   useMuseumColliders(scene)
   useGiftDecor(scene, gift, decor !== null)
@@ -153,11 +164,11 @@ export function Museum() {
       if (obj.name.startsWith('col_')) obj.visible = false
     })
     lightOnce(scene)
-      .then(() => {
+      .then((balloons) => {
         if (!alive) return
         reflection.current = createFloorReflection(gl, root, woodFloors(scene))
         const footprints = getFootprints(scene)
-        setDecor(createDecor(scene, footprints))
+        setDecor(createDecor(scene, footprints, balloons))
         const start = visitorStart(scene, 'spawn_her')
         useWalk.getState().setLoaded(start.position, start.yaw, footprints)
       })
@@ -174,6 +185,8 @@ export function Museum() {
     writeWordsOnce(scene, gift).catch((err) => console.error('Writing their words failed:', err))
   }, [scene, gift])
 
+  useEffect(() => decor?.cinema.dim(videoPlaying), [decor, videoPlaying])
+
   useEffect(() => {
     if (!decor) return
     return () => {
@@ -187,6 +200,8 @@ export function Museum() {
     reflection.current?.update(camera)
     decor?.petals.forEach((petals) => petals.update(camera.position, delta))
     decor?.floorBalloons.update(visitorFeet, delta) // her feet: the camera is 3.2 m behind her
+    decor?.balloons.update(visitorFeet, delta)
+    decor?.cinema.update(delta)
   })
 
   // Shown only once lit, so the unlit glTF materials never flash on screen.
