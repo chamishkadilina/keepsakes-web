@@ -13,6 +13,7 @@ One direction from the entrance to the garden. Positions in metres (x east, y no
 
 ## The walk
 
+0. **Entrance clearing** (x −4–16, y −14–0, in a little wood): they start side by side on the red carpet in front of the open entrance doors (`spawn_her` 5.0, −3.2; `spawn_him` 6.0, −3.2).
 1. **Foyer:** enter from the south. Welcome wall ahead. Door to the story gallery in the north-east corner.
 2. **Story gallery:** walk around the freestanding partition (x = 5.5, y 13.15–17.35). Framed photos on both sides. Leave east into the heart room.
 3. **Heart room:** the big tall room. The collage board (first 12 photos, polaroid style) on the north wall, glowing as you enter. Framed photos on the side walls. Leave east.

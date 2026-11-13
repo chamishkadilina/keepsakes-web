@@ -1,11 +1,11 @@
 """Romantic pieces for the museum: pillar candles and gold lanterns (their flames burn on the web), heart foil balloons
 that gently float, strings of golden bulbs, sheer curtains with little lights behind them, a gold dimmer switch,
-velvet ropes, a neon sign, tall flower stands, a rose garland round the collage, the gramophone by the dance floor and
-where the love notes hang. Candles, lanterns, the little lights behind the sheers and the neon also light the room in
+velvet ropes, a neon sign, tall flower stands, a rose garland round the collage and where the love
+notes hang. Candles, lanterns, the little lights behind the sheers and the neon also light the room in
 the bake (Parts.lights). Local coordinates: floor at z = 0, a piece's front faces +y."""
 import bmesh, math
 from mathutils import Vector, Matrix
-from props_geometry import TAU, UP, track, rbox, cuts, lathe, tube, place, set_uv, polar_grid
+from props_geometry import TAU, UP, track, rbox, cuts, lathe, tube, place, set_uv
 from props_flowers import RED_BLUSH_WHITE, bloom, leaf, roses, rose_leaves, pick
 from props_atlas import swatch_uv
 
@@ -238,45 +238,6 @@ def dimmer_switch(parts, rng, z=1.3):
     for v in done():                                                                     # ... and turned to face +y
         v.co = Vector((v.co.x, 0.008 + v.co.z, z + 0.012 - v.co.y))
     parts.markers["dimmer_switch"] = (Vector((0, 0.04, z + 0.012)), {"aim": [0, 1, 0]})
-
-
-def gramophone(parts, rng, height=0.8, lift=25):
-    """A gramophone on a round cream plinth by the dance floor: a polished walnut case with gold bands, a gold crank and
-    tone arm, a record on its turntable (gramophone_record: the web turns it and plays their song) and a big gold horn
-    opening like a flower towards local +y, `lift` degrees up. Marked for the web (gramophone: the horn's mouth, "aim" =
-    the way it plays)."""
-    g, w = parts["gold_metal"], parts["wood_walnut"]
-    plinth(parts, height, 0.22)
-    cuts(w, rbox(w, (0.34, 0.34, 0.15), 0.012, 2, at=(0, 0, height + 0.075)), 0, -0.17, 0.17, 0.11)
-    for z in (height + 0.008, height + 0.142):                                           # gold bands round the case
-        rbox(g, (0.346, 0.346, 0.012), 0.004, 1, at=(0, 0, z))
-    deck = height + 0.15
-    lathe(g, [(0, deck), (0.15, deck), (0.15, deck + 0.012), (0, deck + 0.012)], 40)       # the turntable
-    rec, r = deck + 0.012, 0.145
-    _, ring = polar_grid(parts["gramophone_record"], r, rec + 0.004, 0.03, 40,
-                            lambda co: (0.5 + co.x / (2 * r), 0.5 + co.y / (2 * r)))
-    low = [parts["gramophone_record"].verts.new((v.co.x, v.co.y, rec)) for v in ring]
-    edge = [parts["gramophone_record"].faces.new((low[k], low[(k + 1) % 40], ring[(k + 1) % 40], ring[k])) for k in range(40)]
-    set_uv(parts["gramophone_record"], edge, lambda co: (0.5 + 0.49 * co.x / r, 0.5 + 0.49 * co.y / r))
-    lathe(g, [(0, rec + 0.004), (0.005, rec + 0.004), (0.005, rec + 0.028), (0, rec + 0.03)], 12)   # spindle
-    post = Vector((0.13, -0.12, deck))                                                   # tone arm, resting on the record
-    lathe(g, [(0, 0), (0.022, 0), (0.022, 0.03), (0.012, 0.042), (0, 0.046)], 16, at=post)
-    end = Vector((0.075, 0.075, rec + 0.03))
-    tube(g, [post + Vector((0, 0, 0.044)), Vector((0.125, -0.02, rec + 0.07)), end], 0.007, 8)
-    lathe(g, [(0, -0.012), (0.026, -0.012), (0.028, 0.0), (0.026, 0.01), (0, 0.012)], 20, at=end + Vector((0, 0, -0.008)))
-    tube(g, [Vector((0.17, 0.0, height + 0.08)), Vector((0.23, 0.0, height + 0.08)), Vector((0.23, 0.0, height + 0.03))], 0.006, 8)
-    lathe(g, [(0, 0), (0.012, 0), (0.014, 0.02), (0.012, 0.04), (0, 0.042)], 12, at=(0.23, 0.0, height - 0.012))   # crank knob
-    base = Vector((0, -0.06, deck + 0.2))                                                # the horn, from the back of the case
-    tube(g, [Vector((0, -0.13, deck - 0.03)), Vector((0, -0.17, deck + 0.08)), base], 0.022, 12)
-    outer = [(0.022, 0.0), (0.03, 0.12), (0.045, 0.24), (0.075, 0.34), (0.13, 0.42), (0.21, 0.47), (0.27, 0.49), (0.276, 0.486)]
-    inner = [(rr - 0.005, z - 0.004) for rr, z in reversed(outer[1:-1])] + [(0.017, 0.0)]
-    done = track(g)
-    lathe(g, outer + inner, 48)
-    turn = Matrix.Translation(base) @ Matrix.Rotation(math.radians(lift - 90), 4, "X")
-    for v in done():
-        v.co = turn @ v.co
-    aim = Vector((0, math.cos(math.radians(lift)), math.sin(math.radians(lift))))
-    parts.markers["gramophone"] = (base + aim * 0.49, {"aim": [round(c, 4) for c in aim]})
 
 
 def love_notes(parts, rng, width=4.0, depth=3.0, cols=6, rows=4, low=2.2, high=2.75, ceiling=4.32):

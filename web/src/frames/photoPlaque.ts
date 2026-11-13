@@ -1,10 +1,10 @@
 import * as THREE from "three";
-import { HAND, SERIF, loadFonts } from "../decor/fonts";
+import { TEXT, loadFonts } from "../decor/fonts";
 
 /**
- * A small museum label for a photo, like in a real gallery: its title in serif capitals, the date in gold and a line or
- * two of their story in handwriting, on a cream card with a fine gold edge, standing a little off the wall with a soft
- * shadow. As bright as the light on its wall. One draw call. Hang it under the photo's frame:
+ * A museum label for a photo, like in a real gallery but large enough to read from where you stand: its title in
+ * capitals, the date in gold and a line or two of their story, all in a clear book serif, on a cream card with a fine
+ * gold edge, standing a little off the wall with a soft shadow. As bright as the light on its wall. One draw call. Hang it under the photo's frame:
  *
  *   const frame = createPhotoFrame({ photo, width, height, light });
  *   const plaque = await createPhotoPlaque({ title: "Our first date", date: "14 February 2021", text: "You were late. I didn't mind.", light });
@@ -21,10 +21,12 @@ export interface PhotoPlaqueOptions {
   fontsUrl?: string;                 // folder with the fonts (web/public/fonts)
 }
 
-const PX = 1600;                     // canvas pixels per metre
-const CARD = 0.24;                   // card width (metres)
-const PAD = 0.016, EDGE = 0.012;     // padding inside the card; margin round it for the shadow
-const INK = "#5a1822", GOLD = "#a8814a", PAPER = "#f8f2e8", LINE = "#c9a46a";
+const PX = 1400;                     // canvas pixels per metre
+const CARD = 0.6;                    // card width (metres)
+const PAD = 0.04, EDGE = 0.02;       // padding inside the card; margin round it for the shadow
+const SIZE = { title: 0.04, date: 0.026, text: 0.034 };          // letter sizes (metres): readable from 3-4 m on a phone
+const LINE = { title: 0.052, date: 0.042, text: 0.047, rule: 0.02 };   // line heights (metres)
+const INK = "#4a141c", GOLD = "#8f6a35", PAPER = "#f8f2e8", RULE = "#c9a46a";
 
 function lines(g: CanvasRenderingContext2D, text: string, width: number, max: number): string[] {
   const out: string[] = [];
@@ -60,36 +62,37 @@ export async function createPhotoPlaque({ title, date, text, light = [0.8, 0.7, 
   const m = (metres: number) => Math.round(metres * PX);
   const canvas = document.createElement("canvas"), g = canvas.getContext("2d")!;
   const inner = m(CARD - 2 * PAD);
-  const titleSize = m(0.0115), dateSize = m(0.0072), textSize = m(0.0105);
-  g.font = `600 ${titleSize}px "${SERIF}", serif`;
+  const titleSize = m(SIZE.title), dateSize = m(SIZE.date), textSize = m(SIZE.text);
+  const titleFont = `600 ${titleSize}px "${TEXT}", serif`, textFont = `500 ${textSize}px "${TEXT}", serif`;
+  g.font = titleFont;
   const titleLines = lines(g, title.toUpperCase(), inner * 0.92, 2);
-  g.font = `500 ${textSize}px "${HAND}", cursive`;
+  g.font = textFont;
   const textLines = text ? lines(g, text, inner, 3) : [];
-  const height = PAD * 2 + titleLines.length * 0.016 + (date ? 0.013 : 0) + 0.008 + textLines.length * 0.0145;
+  const height = PAD * 2 + titleLines.length * LINE.title + (date ? LINE.date : 0) + LINE.rule + textLines.length * LINE.text;
 
   canvas.width = m(CARD + 2 * EDGE); canvas.height = m(height + 2 * EDGE);
   const x0 = m(EDGE), y0 = m(EDGE), w = m(CARD), h = m(height);
-  g.shadowColor = "rgba(40,18,8,0.4)"; g.shadowBlur = m(0.006); g.shadowOffsetY = m(0.003);
+  g.shadowColor = "rgba(40,18,8,0.4)"; g.shadowBlur = m(0.01); g.shadowOffsetY = m(0.005);
   g.fillStyle = PAPER;
-  card(g, x0, y0, w, h, m(0.002)); g.fill();
+  card(g, x0, y0, w, h, m(0.004)); g.fill();
   g.shadowColor = "transparent";
-  g.strokeStyle = LINE; g.lineWidth = Math.max(1, m(0.0006));
-  card(g, x0 + m(0.005), y0 + m(0.005), w - m(0.01), h - m(0.01), m(0.001)); g.stroke();
+  g.strokeStyle = RULE; g.lineWidth = Math.max(1, m(0.0012));
+  card(g, x0 + m(0.01), y0 + m(0.01), w - m(0.02), h - m(0.02), m(0.002)); g.stroke();
 
   const cx = canvas.width / 2;
   let y = y0 + m(PAD);
   g.textBaseline = "top";
-  g.fillStyle = INK; g.font = `600 ${titleSize}px "${SERIF}", serif`;
-  for (const line of titleLines) { spaced(g, line, cx, y, titleSize * 0.12); y += m(0.016); }
+  g.fillStyle = INK; g.font = titleFont;
+  for (const line of titleLines) { spaced(g, line, cx, y, titleSize * 0.08); y += m(LINE.title); }
   if (date) {
-    g.fillStyle = GOLD; g.font = `600 ${dateSize}px "${SERIF}", serif`;
-    spaced(g, date.toUpperCase(), cx, y, dateSize * 0.2); y += m(0.013);
+    g.fillStyle = GOLD; g.font = `600 ${dateSize}px "${TEXT}", serif`;
+    spaced(g, date.toUpperCase(), cx, y, dateSize * 0.15); y += m(LINE.date);
   }
-  g.strokeStyle = LINE;                                            // a short gold rule
-  g.beginPath(); g.moveTo(cx - m(0.014), y + m(0.003)); g.lineTo(cx + m(0.014), y + m(0.003)); g.stroke();
-  y += m(0.008);
-  g.fillStyle = INK; g.font = `500 ${textSize}px "${HAND}", cursive`; g.textAlign = "center";
-  for (const line of textLines) { g.fillText(line, cx, y); y += m(0.0145); }
+  g.strokeStyle = RULE;                                            // a short gold rule
+  g.beginPath(); g.moveTo(cx - m(0.04), y + m(0.006)); g.lineTo(cx + m(0.04), y + m(0.006)); g.stroke();
+  y += m(LINE.rule);
+  g.fillStyle = INK; g.font = textFont; g.textAlign = "center";
+  for (const line of textLines) { g.fillText(line, cx, y); y += m(LINE.text); }
 
   const texture = new THREE.CanvasTexture(canvas);
   texture.colorSpace = THREE.SRGBColorSpace;

@@ -41,17 +41,6 @@ canvas { touch-action: none; display: block; }
   background: rgba(0,0,0,.35); border: 1px solid rgba(255,255,255,.35);
   border-radius: 999px; padding: 0 18px; min-height: 44px; min-width: 44px;
 }
-.hud-buttons { display: flex; gap: 8px; }
-.credits {
-  position: absolute; inset: 0; pointer-events: auto; display: grid; place-items: center;
-  padding: 16px; background: rgba(0,0,0,.45);
-}
-.credits-panel {
-  max-width: 360px; padding: 20px; border-radius: 16px; background: #2a221d;
-  text-shadow: none; line-height: 1.45; text-align: center;
-}
-.credits-panel h2 { margin: 0 0 8px; font-size: 18px; font-weight: 600; }
-.credits-panel p { margin: 0 0 16px; }
 .hint {
   position: absolute; left: 50%; bottom: calc(env(safe-area-inset-bottom) + 24px);
   transform: translateX(-50%); pointer-events: none; font-size: 13px;

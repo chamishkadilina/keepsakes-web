@@ -2,24 +2,23 @@ import { useEffect, useRef } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { CapsuleCollider, RigidBody, useBeforePhysicsStep, useRapier, type RapierRigidBody } from '@react-three/rapier'
 import type { Collider, KinematicCharacterController } from '@dimforge/rapier3d-compat'
-import type { Group, Material, Mesh } from 'three'
-import { MAX_SPEED } from '../characters/character'
-import { useGirl } from '../characters/useGirl'
-import { GAZE, MOVEMENT, PHYSICS, PLAYER } from '../config/gameFeel'
-import { nearestPhoto } from '../gallery/photoSpots'
+import { Color, type Group, type MeshBasicMaterial } from 'three'
+import { MOVEMENT, PHYSICS, PLAYER } from '../config/gameFeel'
 import { resetLook } from '../input/input'
-import { turnAngle } from '../lib/smoothing'
+import { dampAngle } from '../lib/smoothing'
 import { useWalk, visitorFeet } from '../store'
 import { GARDEN, roomAt } from '../world/rooms'
 import { cameraYaw, resetRig, updateCamera } from './cameraRig'
 import { fadeOpacity, setOpacity } from './fade'
 import { CAPSULE_CENTER, createController, newMoveState, stepMovement } from './movement'
 
+// Unlit colours of the capsule and its nose.
+const ALBEDO = [new Color('#e9a6a0'), new Color('#5a3b36')]
+
 /**
- * Her: a collision capsule moved by the character controller in the physics
- * step, with her character (girl.glb) standing in it. The camera runs in
- * useFrame *after* the step (Physics updatePriority = -1) and follows the
- * capsule's interpolated position.
+ * Placeholder player: a capsule moved by the character controller in the
+ * physics step. The camera runs in useFrame *after* the step (Physics
+ * updatePriority = -1) and follows the capsule's interpolated position.
  */
 export function Player() {
   const rapierCtx = useRapier()
@@ -27,22 +26,11 @@ export function Player() {
   const body = useRef<RapierRigidBody>(null)
   const collider = useRef<Collider>(null)
   const visual = useRef<Group>(null)
-  const materials = useRef<Material[]>([])
+  const materials = useRef<MeshBasicMaterial[]>([])
   const controller = useRef<KinematicCharacterController | null>(null)
   const state = useRef(newMoveState())
   const opacity = useRef(1)
   const { loaded, spawn, spawnYaw, resetCount } = useWalk()
-  const girl = useGirl()
-
-  // Collect her materials for the camera fade.
-  useEffect(() => {
-    const list: Material[] = []
-    girl?.object.traverse((o) => {
-      if ((o as Mesh).isMesh) list.push((o as Mesh).material as Material)
-    })
-    materials.current = list
-    opacity.current = 1
-  }, [girl])
 
   useEffect(() => {
     const c = createController(world)
@@ -87,7 +75,7 @@ export function Player() {
 
     v.getWorldPosition(visitorFeet)
     visitorFeet.y -= CAPSULE_CENTER
-    v.rotation.y = turnAngle(v.rotation.y, state.current.heading, MOVEMENT.turnTime, MOVEMENT.turnSpeed, dt)
+    v.rotation.y = dampAngle(v.rotation.y, state.current.heading, MOVEMENT.turnTime, dt)
 
     const aspect = frame.size.width / frame.size.height
     const motion = state.current.motion
@@ -96,21 +84,21 @@ export function Player() {
     opacity.current = fadeOpacity(opacity.current, dist, dt)
     setOpacity(materials.current, opacity.current)
     v.visible = opacity.current > 0.01
-
-    if (girl) {
-      const groundSpeed = Math.min(state.current.groundSpeed, MAX_SPEED)
-      girl.move(groundSpeed)
-      girl.lookAt(groundSpeed < GAZE.stillBelow ? nearestPhoto(visitorFeet, GAZE.photoReach) : null)
-      girl.update(dt)
-    }
   })
 
   return (
     <RigidBody ref={body} type="kinematicPosition" colliders={false} position={[spawn[0], spawn[1] + CAPSULE_CENTER, spawn[2]]}>
       <CapsuleCollider ref={collider} args={[PLAYER.halfHeight, PLAYER.radius]} />
       <group ref={visual}>
-        {/* Her feet at the capsule's bottom; she faces +Z, the capsule's heading faces −Z. */}
-        {girl && <primitive object={girl.object} position-y={-CAPSULE_CENTER} rotation-y={Math.PI} />}
+        <mesh>
+          <capsuleGeometry args={[PLAYER.radius, PLAYER.halfHeight * 2, 6, 16]} />
+          <meshBasicMaterial ref={(m) => { if (m) materials.current[0] = m }} color={ALBEDO[0]} />
+        </mesh>
+        {/* Small "nose" so you can see which way the capsule faces. */}
+        <mesh position={[0, 0.55, -PLAYER.radius]}>
+          <boxGeometry args={[0.16, 0.08, 0.12]} />
+          <meshBasicMaterial ref={(m) => { if (m) materials.current[1] = m }} color={ALBEDO[1]} />
+        </mesh>
       </group>
     </RigidBody>
   )

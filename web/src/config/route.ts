@@ -11,6 +11,10 @@ export const PETAL_PATH: [number, number][] = [
   [11.0, -12.0], [12.6, -12.2], [14.2, -13.0], [14.35, -15.2], [14.6, -16.9], [15.8, -17.3], [17.0, -17.3],
 ]
 
+/** Down the red carpet outside, from the courtyard's far end to the open doors: a wedding aisle. */
+export const ENTRANCE_PATH: [number, number][] = [[5.5, 13.4], [5.5, 9.0], [5.5, 4.6], [5.5, 0.4]]
+export const ENTRANCE_PETALS = { count: 260, roses: 12, seed: 3 }
+
 /** The heart of petals in front of the collage (props.py HEART_AT, HEART_WIDTH). */
 export const HEART_CENTRE: [number, number] = [17.0, -18.6]
 export const HEART_WIDTH = 1.9
@@ -33,12 +37,6 @@ export const DANCE_RING: [number, number][] = Array.from({ length: 25 }, (_, i) 
   -6.2 + DANCE_RING_RADIUS * Math.sin((i / 24) * Math.PI * 2),
 ])
 export const DANCE_PETALS = { count: 140, roses: 6, seed: 11 }
-
-/** The garden: from the door through the arch to the bench. */
-export const GARDEN_PATH: [number, number][] = [
-  [38.4, -6.5], [39.9, -6.5], [41.4, -7.4], [42.8, -8.6], [44.3, -9.5], [45.8, -9.7], [47.0, -9.1],
-]
-export const GARDEN_PETALS = { count: 220, roses: 8, seed: 3 }
 
 /** The party balloons on the floors: each room's floor (x0, z0, x1, z1) and where they gather. */
 export const FLOOR_BALLOON_AREAS: FloorBalloonArea[] = [

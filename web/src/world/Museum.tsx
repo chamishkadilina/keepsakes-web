@@ -7,11 +7,11 @@ import { LIGHTING } from '../config/lighting'
 import {
   DANCE_PETALS,
   DANCE_RING,
+  ENTRANCE_PATH,
+  ENTRANCE_PETALS,
   EAST_PATH,
   EAST_PETALS,
   FLOOR_BALLOON_AREAS,
-  GARDEN_PATH,
-  GARDEN_PETALS,
   HEART_CENTRE,
   HEART_WIDTH,
   PETAL_PATH,
@@ -23,6 +23,7 @@ import { createChapterBoards } from '../decor/chapterBoards'
 import { createFloorBalloons, type FloorBalloons } from '../decor/floorBalloons'
 import { getFootprints, isOnFootprint } from '../decor/footprints'
 import { createMonogramRug } from '../decor/monogramRug'
+import { NightBirds } from '../decor/nightBirds'
 import { createMoviePoster } from '../decor/moviePoster'
 import { createNeonSign } from '../decor/neonSign'
 import { createQuoteBoard } from '../decor/quoteBoard'
@@ -31,13 +32,16 @@ import { createWelcomeSign } from '../decor/welcomeSign'
 import { Gallery } from '../gallery/Gallery'
 import { DEFAULT_QUOTE, NEON_TEXT, useGift, type Gift } from '../gift/gift'
 import { applyBakedLighting } from '../lighting/bakedLighting'
+import { createCampfire } from '../lighting/campfire/campfire'
 import { createCandleFlames } from '../lighting/candleFlames'
 import { createCinemaLights, type CinemaLights } from '../lighting/cinemaLights'
 import { addCeilingLights } from '../lighting/ceilingLights'
 import { createCurtainLights } from '../lighting/curtainLights'
-import { createDuskSky } from '../lighting/duskSky'
+import { createFireflies } from '../lighting/fireflies'
 import { createFloorReflection } from '../lighting/floorReflection'
+import { NightSky } from '../lighting/nightSky'
 import { createProjectorBeam } from '../lighting/projectorBeam'
+import { addWind } from '../lighting/wind'
 import { useCinema, useWalk, visitorFeet } from '../store'
 import { disposeDrawn } from './disposeDrawn'
 import { useGiftDecor } from './useGiftDecor'
@@ -51,7 +55,12 @@ type FloorReflection = ReturnType<typeof createFloorReflection>
 type Decor = {
   flames: THREE.Object3D
   curtainLights: THREE.Points
-  sky: THREE.Object3D
+  gardenLights: THREE.Points
+  fireflies: THREE.Points
+  campfire: THREE.Group | null
+  wind: ReturnType<typeof addWind>
+  sky: NightSky
+  birds: NightBirds
   beam: THREE.Group | null
   petals: RosePetals[]
   floorBalloons: FloorBalloons
@@ -104,24 +113,29 @@ function writeWordsOnce(scene: THREE.Object3D, gift: Gift): Promise<void> {
 }
 
 /**
- * What stands beside the model: the candle flames, the little lights behind the sheers, the dusk sky, the projector's beam,
+ * What stands beside the model: the candle flames, the little lights behind the sheers and in the garden's tree, the fireflies, the garden's fire and breeze, the night sky and its rare birds, the projector's beam,
  * and the petals and floor balloons, clear of the furniture. Also the cinema's dimming, on the model and the petals: after
  * the floor reflection, before the Gallery mounts (the couple's photos are never dimmed).
  */
 function createDecor(scene: THREE.Object3D, footprints: ReturnType<typeof getFootprints>, balloons: FloatingBalloons): Decor {
   const avoid = (x: number, z: number) => isOnFootprint(footprints, x, z)
   const petals = [
+    createRosePetals(ENTRANCE_PATH, { ...ENTRANCE_PETALS, avoid }),
     createRosePetals(PETAL_PATH, { avoid }),
     createRosePetalHeart(HEART_CENTRE, HEART_WIDTH, { avoid }),
     createRosePetals(EAST_PATH, { ...EAST_PETALS, avoid }),
     createRosePetals(RIGHT_PATH, { ...RIGHT_PETALS, avoid }),
     createRosePetals(DANCE_RING, { ...DANCE_PETALS, avoid }),
-    createRosePetals(GARDEN_PATH, { ...GARDEN_PETALS, avoid }),
   ]
   return {
     flames: createCandleFlames(scene),
     curtainLights: createCurtainLights(scene),
-    sky: createDuskSky(),
+    gardenLights: createCurtainLights(scene, { marker: 'garden_lights', ...LIGHTING.gardenLights }),
+    fireflies: createFireflies(),
+    campfire: createCampfire(scene),
+    wind: addWind(scene),
+    sky: new NightSky(),
+    birds: new NightBirds(),
     beam: createProjectorBeam(scene),
     petals,
     floorBalloons: createFloorBalloons(FLOOR_BALLOON_AREAS, { footprints }),
@@ -139,13 +153,9 @@ function woodFloors(scene: THREE.Object3D): THREE.Mesh[] {
 }
 
 /**
- * Loads the hand-made museum, hides `col_*` boxes, applies its baked lighting,
- * ceiling lamps and floor reflection (design/lighting.md), adds the candle flames,
- * the little lights behind the sheers, the dusk sky, the projector's beam, the rose petals and the
- * floor balloons, floats the heart balloons, writes their words, and reports where
- * she starts and the footprints. The love notes: useGiftDecor.
- * Colliders: useMuseumColliders. Photos and frames: Gallery.
- * Never builds geometry itself.
+ * Loads the hand-made museum, hides `col_*` boxes, applies its baked lighting, ceiling lamps and floor reflection
+ * (design/lighting.md), adds the decor (createDecor), floats the heart balloons, writes their words, and reports where
+ * she starts and the footprints. The love notes: useGiftDecor. Colliders: useMuseumColliders. Photos: Gallery.
  */
 export function Museum() {
   const { scene } = useGLTF(MODEL_URL)
@@ -191,6 +201,9 @@ export function Museum() {
     if (!decor) return
     return () => {
       disposeDrawn(decor.curtainLights)
+      disposeDrawn(decor.gardenLights)
+      disposeDrawn(decor.fireflies)
+      if (decor.campfire) disposeDrawn(decor.campfire)
       if (decor.beam) disposeDrawn(decor.beam)
     }
   }, [decor])
@@ -202,6 +215,9 @@ export function Museum() {
     decor?.floorBalloons.update(visitorFeet, delta) // her feet: the camera is 3.2 m behind her
     decor?.balloons.update(visitorFeet, delta)
     decor?.cinema.update(delta)
+    decor?.sky.update(delta)
+    decor?.birds.update(delta)
+    decor?.wind.update()
   })
 
   // Shown only once lit, so the unlit glTF materials never flash on screen.
@@ -211,7 +227,11 @@ export function Museum() {
       <primitive object={scene} />
       <primitive object={decor.flames} />
       <primitive object={decor.curtainLights} />
+      <primitive object={decor.gardenLights} />
+      <primitive object={decor.fireflies} />
+      {decor.campfire && <primitive object={decor.campfire} />}
       <primitive object={decor.sky} />
+      <primitive object={decor.birds} />
       {decor.beam && <primitive object={decor.beam} />}
       {decor.petals.map((petals) => (
         <primitive key={petals.uuid} object={petals} />

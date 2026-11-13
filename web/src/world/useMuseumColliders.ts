@@ -65,7 +65,8 @@ export function useMuseumColliders(scene: THREE.Object3D) {
     const colliders: Collider[] = []
     scene.traverse((obj) => {
       if (!(obj instanceof THREE.Mesh) || obj.name.startsWith('prop_')) return
-      const groups = obj.name.startsWith('floor_') ? FLOOR_GROUPS : SOLID_GROUPS
+      const floor = obj.name.startsWith('floor_') || obj.name.startsWith('col_floor_') // col_floor_*: invisible ground (the entrance courtyard)
+      const groups = floor ? FLOOR_GROUPS : SOLID_GROUPS
       colliders.push(world.createCollider(colliderFor(obj, rapier).setCollisionGroups(groups), body))
     })
     return () => {

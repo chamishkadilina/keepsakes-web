@@ -69,7 +69,19 @@ for o in [o for o in bpy.data.objects if o.get("light_vertex")]:
     def vbuild(nt, em, a=a):
         ca = nt.nodes.new("ShaderNodeVertexColor"); ca.layer_name = "light"
         mul = nt.nodes.new("ShaderNodeMix"); mul.data_type = "RGBA"; mul.blend_type = "MULTIPLY"; mul.inputs[0].default_value = 1.0
-        nt.links.new(ca.outputs[0], mul.inputs[6]); mul.inputs[7].default_value = (*(c * K for c in a), 1)
+        nt.links.new(ca.outputs[0], mul.inputs[6])
+        if isinstance(a, tuple):
+            mul.inputs[7].default_value = (*(c * K for c in a), 1)
+        else:   # textured (the garden): its colour texture x K; leaf cards cut out by its alpha
+            at = nt.nodes.new("ShaderNodeTexImage"); at.image = a
+            k = nt.nodes.new("ShaderNodeMix"); k.data_type = "RGBA"; k.blend_type = "MULTIPLY"; k.inputs[0].default_value = 1.0
+            nt.links.new(at.outputs[0], k.inputs[6]); k.inputs[7].default_value = (K, K, K, 1)
+            nt.links.new(k.outputs[2], mul.inputs[7])
+            if a.filepath.endswith(".png"):
+                cut = nt.nodes.new("ShaderNodeMixShader"); clear = nt.nodes.new("ShaderNodeBsdfTransparent")
+                out = nt.nodes["Material Output"]
+                nt.links.new(at.outputs["Alpha"], cut.inputs[0]); nt.links.new(clear.outputs[0], cut.inputs[1])
+                nt.links.new(em.outputs[0], cut.inputs[2]); nt.links.new(cut.outputs[0], out.inputs[0])
         nt.links.new(mul.outputs[2], em.inputs[0])
     m = unlit(f"vl_{o.name}", vbuild)
     o.data.materials.clear(); o.data.materials.append(m)
@@ -94,7 +106,9 @@ def cam(name, loc, at, lens=16):
     return c
 sc.render.resolution_x, sc.render.resolution_y = 1280, 720
 VIEWS = [("foyer", (5.5, 0.8, 1.6), (5.0, 9.8, 1.8)), ("story", (9.6, 11.0, 1.6), (1.0, 19.5, 1.7)), ("heart", (17, 4.0, 1.6), (17, 20.8, 2.3)),
-         ("screen", (32.25, 2.4, 1.6), (32.25, 12.8, 1.9)), ("right", (24.0, 14.5, 1.6), (37.5, 19.5, 1.8))]
+         ("screen", (32.25, 2.4, 1.6), (32.25, 12.8, 1.9)), ("right", (24.0, 14.5, 1.6), (37.5, 19.5, 1.8)),
+         ("garden_door", (38.6, 6.5, 1.6), (50.0, 8.0, 1.2)), ("garden_bench", (46.5, 6.0, 1.6), (40.3, 2.8, 0.6)),
+         ("garden_corner", (50.8, 14.8, 1.8), (41.0, 3.0, 0.5))]
 only = sys.argv[4].split(",") if len(sys.argv) > 4 else None
 for name, loc, at in VIEWS:
     if only and name not in only:

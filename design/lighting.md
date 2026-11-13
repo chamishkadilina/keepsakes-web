@@ -11,7 +11,7 @@ Target: the owner's final reference video (`design/reference-final/*.png`, frame
 - a romantic museum, warm like a home: channel-tufted dusty-rose velvet sofas with cream cushions (a three-seater facing the collage on an ivory-and-rose rug with a marble coffee table and side tables; the loveseat facing the screen), big green house trees in cream planters with gold rims (kentia palms, weeping figs, olive trees, fiddle-leaf figs), marble tables and consoles with roses and candles
 - flowers as at a wedding: rose topiaries tied with red satin bows, urns of roses spilling over tall cream pedestals
 - the foyer is the invitation: the big title wall straight ahead as she comes in, in its own spotlight between two rose topiaries and two bunches of heart balloons on little gold weights; a round ivory rug in its open middle with their initials in gold; ivory sheers along both side walls with a curtain of little warm lights glowing through them; the door where the story begins framed by wine-red velvet curtains hanging straight either side under a pelmet, its way kept clear. It has no photos of its own
-- candles and gold lanterns where they belong (on the consoles and tables, round the petal heart, in the corridor, along the garden path and either side of the garden bench), their flames flickering and their warm glow on the floors and walls; heart foil balloons, half of them red, the rest blush and rose gold, that float, bob and slowly turn at eye level (tied to the sofa's side tables, or standing on little gold heart weights by the title wall, the chapter boards and the dance floor); tall gold flower stands; a garland of roses round the collage; a pink neon of their words in the corridor
+- candles and gold lanterns where they belong (on the consoles and tables, round the petal heart, in the corridor, by the garden's daybed and on its grass), their flames flickering and their warm glow on the floors and walls; heart foil balloons, half of them red, the rest blush and rose gold, that float, bob and slowly turn at eye level (tied to the sofa's side tables, or standing on little gold heart weights by the title wall, the chapter boards and the dance floor); tall gold flower stands; a garland of roses round the collage; a pink neon of their words in the corridor
 - strings of round, bright golden bulbs draped in swags along the heart room's walls: only the bulbs glow, with no pools of light on the walls between them
 - each chapter's title on a smaller board in the same style, straight ahead as you come into its room: "How It Began" (story gallery) and "Reasons I Love You" (right gallery), each with his line under it if he wrote one
 - in the heart room's south half, a round marble dance floor with a gold rim and a little gold heart, in a soft pool of light, and beside it a gramophone on a cream plinth that plays their song while they stand on the dance floor (its record turns); petals round the floor's edge
@@ -21,7 +21,7 @@ Target: the owner's final reference video (`design/reference-final/*.png`, frame
 - in their own spotlights: the foyer's title wall ("Welcome to The Museum of Us", their names, the date and his note), the chapter boards, the couple's quote on a big ivory board on a gold easel and a grand dome of roses either side of the collage
 - the screen room is a little cinema: a little dimmer, a white projector hanging from the ceiling whose soft beam (dust drifting through it) lands on a real cinema screen (matte white in a black frame with a fine gold edge, above a low velvet stage, between wine-red velvet stage curtains tied back under a pelmet), the same curtains tied back at the garden door, a "Now Showing" film poster of the two of them glowing in a lightbox by the way in, popcorn and drinks on the tables by the loveseat, rose topiaries either side of the stage, each washed by a warm floor light
 - every photo can have a small museum label under it (title, date, a line of their story)
-- the garden finale through the screen room: an arch of roses, lanterns along a path of petals, a bench for two in front of a heart of roses, hedges, rose bushes and olive trees
+- the garden finale through the screen room, at night under the moon and the stars: a daybed for two by the door looking across the lawn to the moon, a fire crackling in a ring of stones out on the lawn before it, a big jacaranda (and a younger one in the far corner) with strings of little warm lights hanging from its branches and draped to the walls, a picnic basket and champagne by the daybed, a few lanterns on a dark leafy lawn, mossy stones and ferns, patches of wildflowers, fireflies, and a little wood of trees, bushes and ferns all round before old mossy stone walls (`tools/bake/garden.py`, layout in `garden_layout.py`)
 - no sconces, no picture lights
 
 **The web must look like `design/web-reference/*.png`.** Those screenshots were rendered in a real browser (three.js r170) with the drop-in code below (`web-arrival.png`: the foyer as she comes in; `web-welcome.png`: the title wall; `web-rug.png`: the monogram rug; `web-chapter-story.png`, `web-chapter-reasons.png`: the chapter boards; `web-dance.png`, `web-gramophone.png`: the dance floor and the gramophone; `web-notes.png`: the love notes; `web-poster.png`, `web-popcorn.png`: the cinema's poster and treats; `web-sheers.png`, `web-doorway.png`: the sheers with their little lights and the door into the story; `web-quote.png`: the quote board; `web-candles.png`: the petal heart; `web-neon.png`: the neon; `web-dimmer.png`: the dimmer switch; `web-heart-lights.png`, `web-floor-balloons.png`: the light strings and the balloons on the floor; `web-screen.png`, `web-beam.png`, `web-projector.png`, `web-curtains.png`: the screen room; `web-garden*.png`: the garden; the room views show the decor).
@@ -38,7 +38,7 @@ Each room has one part to play, so that by the end she feels loved and wants to 
 | Corridor | a pause | "forever us" in neon |
 | Right gallery | reasons I love you | its chapter board straight ahead as you come in, the love notes hanging over its middle (one per reason), photos with their labels |
 | Screen room | moments in motion | their videos on the cinema screen, the loveseat with popcorn, their "Now Showing" poster |
-| Garden | forever, thank you | the bench for two before the heart of roses (the ending is designed next, with the walk for two) |
+| Garden | forever, thank you | the daybed for two by the fire, looking across the garden to the lit jacaranda and the moon (the ending is designed next, with the walk for two) |
 
 ## The museum file
 
@@ -53,7 +53,7 @@ const gltf = await new GLTFLoader().setMeshoptDecoder(MeshoptDecoder).loadAsync(
 
 ## Rules
 
-1. **No real-time lights or shadows.** All light is baked in Blender. Identical on every device; only the pixel ratio may adapt for speed. Exception: the characters' own `addCharacterLights` (`characters/character.ts`), which only their lit materials use; the museum stays unlit.
+1. **No real-time lights or shadows.** All light is baked in Blender. Identical on every device; only the pixel ratio may adapt for speed.
 2. **Never change the couple's photos.** Photo materials: `MeshBasicMaterial`, `map` = photo (sRGB), white colour, `toneMapped: false`. Never crop or stretch a photo: frames take the photo's own aspect ratio. No post-processing pass may touch photos.
 3. **No post-processing composer.** Render the scene directly so tone mapping stays per-material (room = AgX, photos = untouched).
 
@@ -80,8 +80,11 @@ After loading `museum.glb`, in this order:
 await applyBakedLighting(gltf.scene, "/models/lightmaps");   // lighting/bakedLighting.ts
 addCeilingLights(gltf.scene);                                 // lighting/ceilingLights.ts (downlights, track lights, glare)
 scene.add(createCandleFlames(gltf.scene));                    // lighting/candleFlames.ts: every candle and lantern burns
-scene.add(createCurtainLights(gltf.scene));                   // lighting/curtainLights.ts: the little lights behind the foyer's sheers
-scene.add(createDuskSky());                                   // lighting/duskSky.ts: the dusk sky over the garden
+scene.add(createCurtainLights(gltf.scene));                   // lighting/curtainLights.ts: the little lights behind the foyer's sheers and in the garden's tree
+scene.add(createFireflies());                                 // lighting/fireflies.ts: fireflies over the garden
+const fire = createCampfire(gltf.scene); if (fire) scene.add(fire); // lighting/campfire/: the garden's fire (the `campfire` marker)
+const sky = new NightSky(); scene.add(sky);                  // lighting/nightSky.ts: the night over the garden
+useFrame((_, delta) => sky.update(delta));                    // twinkling stars, now and then a shooting star
 const balloons = animateBalloons(gltf.scene);                 // decor/balloons.ts: the heart balloons float, turn and sway away from her
 useFrame(({ camera }, delta) => balloons.update(camera.position, delta));   // a third-person camera: pass her feet instead
 await createNeonSign(gltf.scene, { text: "forever us" });     // decor/neonSign.ts: their words in neon (corridor)
@@ -93,7 +96,6 @@ const petals = [                                              // decor/rosePetal
   createRosePetals(EAST_PATH, { count: 280, roses: 10, seed: 5, avoid }),      // corridor and screen room to the garden door
   createRosePetals(RIGHT_PATH, { count: 100, roses: 4, seed: 9, avoid }),      // into the right gallery
   createRosePetals(DANCE_RING, { count: 140, roses: 6, seed: 11, avoid }),     // round the dance floor
-  createRosePetals(GARDEN_PATH, { count: 220, roses: 8, seed: 3, avoid }),     // to the bench in the garden
 ];
 scene.add(...petals);
 useFrame(({ camera }, delta) => petals.forEach((p) => p.update(camera.position, delta)));   // petals move around her feet
@@ -166,9 +168,12 @@ videoPlane.userData.cinemaScreen = true;                      // the video itsel
 
 - `bakedLighting.ts`: walls / floors / ceilings (albedo × lightmap, uv1, intensity × π), mouldings, tray cornices, the niche and the gold lines (vertex colours: lit like the room around them), the furniture, exhibits and decor (vertex colours; velvet (sofas, cushions, the curtains, the cinema's stage) and gold keep their sheen, the balloons their foil shine, the projector and the screen's frame their satin white and black, rugs and marble keep their texture, roses, leaves and curtains show both sides), the foyer's sheers (see-through ivory voile, `sheerMaterial.ts`, drawn after the little lights behind them), the cinema screen (softly lit white), glass (lanterns: it only adds its reflections), spot lenses, niche LEDs and the projector's lens (warm glow), the bulbs of the light strings (bright gold). Hides the neon's words until `createNeonSign` writes them. Removes any exported lights. Logs an error if nothing got light (wrong path).
 - `candleFlames.ts`: a small flame on every candle and in every lantern (~60, listed by the model's `candle_flames` marker): upright, always turned towards you, each flickering in its own rhythm, with a soft halo; they show in the floor reflection too. Their warm glow on the floors, walls and furniture is baked. 1 draw call, animated on the GPU.
-- `curtainLights.ts`: the curtain of ~1,300 little warm lights hanging behind the foyer's sheers (listed by the model's `fairy_lights` marker): tiny bright points in a small soft glow, no halos, each twinkling softly in its own slow rhythm, seen through the voile. Their warm glow on the wall behind is baked. 1 draw call, animated on the GPU; drawn just before the sheers and before everything else see-through.
+- `curtainLights.ts`: the curtain of ~1,300 little warm lights hanging behind the foyer's sheers (listed by the model's `fairy_lights` marker): tiny bright points in a small soft glow, no halos, each twinkling softly in its own slow rhythm, seen through the voile. Their warm glow on the wall behind is baked. 1 draw call, animated on the GPU; drawn just before the sheers and before everything else see-through. A second call (`createCurtainLights(scene, { marker: 'garden_lights', ...LIGHTING.gardenLights })`) draws the ~420 little warm lights of the garden's jacaranda, larger (17 cm glow): strings hanging from its branches and five draped to the walls, all above head height (2.3 m) and below the leaves (`garden.py` adds them to `fairy_lights`; their warm glow under the canopy is baked).
 - `sheerMaterial.ts` (used by `applyBakedLighting`): the sheers' ivory voile: see-through where it faces you, denser where its folds turn away, so the folds read softly and the little lights and the warm wall behind glow through it. Both sides drawn; drawn just after the little lights.
-- `duskSky.ts`: the sky over the garden (and through its door): warm peach low down like the baked sky light, rose and mauve above, deepening to indigo overhead with the first faint stars. A dome that travels with the camera (keep the camera's far plane above 100 m); replaces any other sky or background colour. 1 draw call.
+- `nightSky.ts`: the night over the garden (and through its door): deep blue-black overhead, a soft violet glow and a last rose glow at the horizon, a faint Milky Way, softly twinkling stars, a big soft moon (east-south-east, 26° up, ahead of the daybed; the bake's moonlight comes from the same place: `MOON` in `tools/bake/design.py`) and, now and then (every 10–28 s), a shooting star with a soft glowing tail, crossing the sky ahead of the daybed in about a second and a half. Tuning: `LIGHTING.nightSky` in `config/lighting.ts`. A dome that travels with the camera (keep the camera's far plane above 100 m); call `update(delta)` every frame. 1 draw call.
+- `fireflies.ts`: ~45 fireflies over the garden inside its border: soft yellow-green points wandering slowly round their spots, mostly faint and glowing up now and then, each in its own rhythm. Not a light. Tuning: `LIGHTING.fireflies`. 1 draw call, animated on the GPU.
+- `foliage.ts` (used by `applyBakedLighting`): leaf cards cut out by their texture's alpha (glTF alpha MASK: the jacaranda's) keep their leaves at a distance: the alpha is raised by how small the texture is drawn, so the averaged far-away mipmaps don't fall below the cut-off (`LIGHTING.foliageMipScale`).
+- `campfire/` (`createCampfire` in `campfire.ts`): the fire in the garden's ring of stones, a teepee of logs over kindling (`TEEPEE` in `tools/bake/garden_layout.py`): a bed of coals with glowing cracks that slowly pulse (`coals.ts`), five layered flame sheets that turn to face you (warped-noise tongues, a touch of blue at the foot, a white-yellow heart, orange-red tips) in a soft heat halo (`flames.ts`), the logs and kindling glowing where the fire licks them (their baked material patched: call before `createCinemaLights`), sparks rising and twinkling, soft smoke curling up (`embers.ts`), and a warm glow on the grass that flickers with the flames over its baked light (`FIRE_LIGHT`). Not a light. Tuning: `LIGHTING.campfire`. ~10 draw calls, animated on the GPU.
 - `balloons.ts`: every heart balloon floats on its own rhythm: it bobs gently, drifts a little and slowly turns to and fro about its own middle (about every 11 s), so its foil catches the light; its ribbon follows (less towards the knot where it is tied); balloons at the ceiling only bob down from it. Within 0.8 m of the visitor a balloon sways away from her and springs back, its ribbon still tied at the weight: call `update(camera.position, delta)` every frame (one small spring per balloon, 41 in all, passed to the vertex shader). Floating runs on the GPU, no extra draw call.
 - `floorBalloons.ts`: round latex party balloons (red, blush, ivory, gold) lying on the floor in loose groups (`FLOOR_BALLOON_AREAS`: each room's floor and where they gather). When she walks into them they roll and bounce away from her feet, harder the faster she walks, knock into each other, bounce off the furniture (`footprints`) and stay inside their room, rolling to a stop in about two seconds. `light` matches them to the rooms' brightness. 1 draw call; `update()` well under 0.1 ms per frame.
 - `projectorBeam.ts`: the projector's beam, like in a film hall: a soft cone of warm light from the lens on the ceiling (the `projector_lens` marker) to the corners of `screen_surface`, brightest at the lens, with specks of dust drifting slowly through it. Additive, no real-time light; 2 draw calls, not in the floor reflection. Keep it on in the screen room (`beam.visible = false` hides it); `strength` makes it brighter or softer.
@@ -285,29 +290,7 @@ They are part of `museum.glb`, modelled in `tools/bake/props.py` and baked with 
 | `olive_screen_n` | olive tree | screen room | (37.15, 12.35) |
 | `topiary_screen_w` | rose topiary | screen room | (28.3, 12.3) |
 | `topiary_screen_e` | rose topiary | screen room | (36.2, 12.3) |
-| `rose_arch` | arch of roses | garden | (39.4, 6.5) |
-| `bench_garden` | bench for two | garden | (47.0, 7.6) |
-| `heart_arch` | heart of roses | garden | (47.0, 6.75) |
-| `balloons_bench` | balloons | garden | (47.69, 7.6) |
-| `candles_bench_w` | candles | garden | (45.95, 8.1) |
-| `candles_bench_e` | candles | garden | (48.05, 8.1) |
-| `lantern_bench_w` | lantern | garden | (45.85, 7.25) |
-| `lantern_bench_e` | lantern | garden | (48.15, 7.25) |
-| `hedge_back` | hedge | garden | (47.0, 5.55) |
-| `hedge_w` | hedge | garden | (44.6, 7.0) |
-| `hedge_e` | hedge | garden | (49.4, 7.0) |
-| `bush_arch_w` | rose bush | garden | (45.3, 6.15) |
-| `bush_arch_e` | rose bush | garden | (48.7, 6.15) |
-| `hedge_garden_s` | hedge | garden | (45.0, 0.75) |
-| `hedge_garden_n` | hedge | garden | (45.0, 15.25) |
-| `hedge_garden_e` | hedge | garden | (51.25, 8.0) |
-| `olive_garden_sw` | olive tree | garden | (39.0, 1.0) |
-| `olive_garden_nw` | olive tree | garden | (39.0, 15.0) |
-| `olive_garden_se` | olive tree | garden | (51.1, 0.9) |
-| `olive_garden_ne` | olive tree | garden | (51.1, 15.1) |
 | `candles_heart_*` | 13 × candles | heart room | round the petal heart |
-| `bush_garden_*` | 6 × rose bush | garden | round the garden |
-| `lantern_garden_*` | 8 × lantern | garden | along the garden path |
 
 The petal paths and the heart (three.js `[x, z]`), clear of every piece: from the entrance across the foyer, through the story gallery and into the heart room up to the tip of the petal heart (its candles leave a gap there to step in); the heart in front of the collage; from the heart room through the corridor and the screen room to the garden door; from the corridor into the right gallery; a ring round the dance floor; in the garden from the door through the arch to the bench.
 
@@ -325,7 +308,6 @@ const FLOOR_BALLOON_AREAS: FloorBalloonArea[] = [       // each room's floor (x0
   { rect: [11.4, -20.6, 22.6, -1.9], count: 8, groups: [[13.4, -12.8], [19.8, -4.6]] },         // heart room
   { rect: [23.4, -20.6, 37.6, -13.5], count: 6, groups: [[27.2, -15.4], [34.2, -15.8]] },       // right gallery
 ];
-const GARDEN_PATH: [number, number][] = [[38.4, -6.5], [39.9, -6.5], [41.4, -7.4], [42.8, -8.6], [44.3, -9.5], [45.8, -9.7], [47.0, -9.1]];
 ```
 
 ## Performance (measured)

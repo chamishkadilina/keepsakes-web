@@ -10,6 +10,7 @@ Read `BUILD_SPEC.md` before any task. Do one step, show the result, update `PROG
 - Never edit, regenerate or "fix" `museum.blend` or write scripts that rebuild the museum. If something in the model is wrong, tell the owner exactly what to change in Blender.
 - Read-only Blender scripts (check names, report sizes, render a preview) are allowed. Put them in `tools/`.
 - When the owner asks, helper scripts for mechanical work (lightmap UVs, baking, export) are allowed. They work on a copy and never change the design.
+- One exception: when the owner asks, Claude may build and change the garden in `tools/bake/garden.py` and `garden_layout.py` (CC0 models prepared by `garden_assets.py`, their placement and markers, and the garden walls' colour). Everything else stays hand-modelled by the owner.
 
 ## Rules
 1. Scope now: the experience only. No sign-in, payments, database or editor.
@@ -24,7 +25,7 @@ Read `BUILD_SPEC.md` before any task. Do one step, show the result, update `PROG
 10. The owner tests every step manually and says "passed". Never build debug overlays, test harnesses, trace scripts or measurement tools unless the owner asks.
 11. Clean, simple, maintainable code: small focused files, clear names, no dead code, no hacks, tuning values only in config files.
 12. Work efficiently: read only the files needed, don't run the dev server or browser tests, short summaries.
-13. **No real-time lights.** All light is baked in Blender (`design/lighting.md`). The web never adds SpotLight, PointLight, DirectionalLight, HemisphereLight, AmbientLight or shadows; lights in the `.glb` are removed on load. Materials are unlit (`MeshBasicMaterial` + lightmap, or `light_rgb`; matcap for gold). Tuning lives in `web/src/config/lighting.ts`. One exception: the characters (bride) are lit by their own `addCharacterLights` (`web/src/characters/character.ts`: hemisphere, two directional, room reflections). Only their lit materials use it; nothing in the museum may use a lit material.
+13. **No real-time lights.** All light is baked in Blender (`design/lighting.md`). The web never adds SpotLight, PointLight, DirectionalLight, HemisphereLight, AmbientLight or shadows; lights in the `.glb` are removed on load. Materials are unlit (`MeshBasicMaterial` + lightmap, or `light_rgb`; matcap for gold). Tuning lives in `web/src/config/lighting.ts`.
 14. **Identical on every device.** No quality tiers that change lights, materials or effects. Only the render resolution (pixel ratio) may adapt, to keep the frame rate.
 15. **Never change the couple's photos.** Every photo (frames, collage, screen, garden board, full-screen viewer) shows its exact original colours: `MeshBasicMaterial`, white colour, `toneMapped = false`, no tint, no filters, no post-processing. Only the frame around it takes the room's `light_rgb`.
 

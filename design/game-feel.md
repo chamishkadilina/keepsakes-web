@@ -8,11 +8,11 @@ Every value below is a starting point. Tune it on a real phone and update this f
 
 | What | Value |
 |---|---|
-| Walk / run speed | 1.0 m/s walk, 1.75 m/s Shift: the girl's own `WALK_SPEED` / `MAX_SPEED` (`characters/character.ts`), never faster |
+| Walk / run speed | Keep current values (owner approved) |
 | Speed up to full | 0.25 s, eased (no instant start) |
 | Slow down to stop | 0.2 s, eased (no sliding, no instant stop) |
 | Direction | Relative to the camera (forward = where the camera looks) |
-| Character turning | Smoothly turns to face the movement direction, at most 8 rad/s, eased at the end (0.12 s); never snaps, even for a 180° turn |
+| Character turning | Smoothly turns to face the movement direction, ~0.12 s; never snaps, even for a 180° turn |
 | Joystick | Analog: a small push walks slowly, a full push walks at full speed |
 | Ground | Stays glued to the floor; no bouncing, no sliding on edges; steps up to 0.2 m |
 | Walls | Slides smoothly along walls, never sticks or shakes |

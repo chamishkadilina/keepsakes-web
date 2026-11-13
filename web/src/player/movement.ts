@@ -20,7 +20,6 @@ export type MoveState = {
   fallSpeed: number
   grounded: boolean
   heading: number // direction the player wants to face (yaw)
-  groundSpeed: number // m/s she actually moved over the floor last step (walls and furniture stop her)
   moved: boolean // true once the player has given any input
 }
 
@@ -31,7 +30,6 @@ export const newMoveState = (): MoveState => ({
   fallSpeed: 0,
   grounded: false,
   heading: 0,
-  groundSpeed: 0,
   moved: false,
 })
 
@@ -72,7 +70,7 @@ function updateVelocity(s: MoveState, cameraYaw: number, dt: number) {
  * One physics step. The controller handles walls (slide) and steps
  * (autostep); height comes from a ground ray so the player stays exactly on
  * the floor (the controller's own grounded flag flickers on flat floors). The
- * ray sees only `floor_*` meshes. Furniture has no colliders: its footprints
+ * ray sees only `floor_*` meshes (and the invisible `col_floor_*` ground). Furniture has no colliders: its footprints
  * push the capsule back out.
  * Returns the next body position.
  */
@@ -95,7 +93,6 @@ export function stepMovement(
   const p = body.translation()
   const next = new Vector3(p.x + d.x, p.y + d.y, p.z + d.z)
   keepOffFootprints(next, PLAYER.radius, footprints)
-  s.groundSpeed = Math.hypot(next.x - p.x, next.z - p.z) / dt
 
   const down = new rapier.Ray(next, { x: 0, y: -1, z: 0 })
   const ground = world.castRay(down, CAPSULE_CENTER + MOVEMENT.groundSnap, true, undefined, GROUND_RAY_GROUPS, collider, body)

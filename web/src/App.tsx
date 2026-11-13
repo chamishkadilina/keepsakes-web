@@ -2,7 +2,6 @@ import { Suspense } from 'react'
 import { Canvas } from '@react-three/fiber'
 import { AgXToneMapping, SRGBColorSpace } from 'three'
 import { Physics } from '@react-three/rapier'
-import { CharacterLights } from './characters/CharacterLights'
 import { CAMERA, PHYSICS } from './config/gameFeel'
 import { LIGHTING } from './config/lighting'
 import { Controls } from './input/Controls'
@@ -30,8 +29,7 @@ export function App() {
         }}
       >
         <VsyncFrameLoop />
-        {/* No post-processing; the museum's light is baked (design/lighting.md). Only the characters are lit. */}
-        <CharacterLights />
+        {/* No lights and no post-processing: all light is baked (design/lighting.md). */}
         <Suspense fallback={null}>
           {/* Steps before default useFrames (priority 0), so the camera sees this frame's interpolated player. */}
           <Physics timeStep={PHYSICS.timeStep} interpolate updatePriority={-1}>

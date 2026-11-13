@@ -1,6 +1,6 @@
 # Assets
 
-Every external asset used in the project. Allowed licenses: CC0, Pixabay License, SIL OFL, MIT/ISC. Exception (owner approved 2026-11-11): `girl.glb`'s character, CGTrader Royalty Free License; kept out of git (`.gitignore`).
+Every external asset used in the project. Allowed licenses: CC0, Pixabay License, SIL OFL, MIT/ISC.
 
 | File | Source URL | Author | License |
 |---|---|---|---|
@@ -36,8 +36,28 @@ Every external asset used in the project. Allowed licenses: CC0, Pixabay License
 | `web/public/demo/photos/30.webp` + `30_t.webp` | https://pixabay.com/photos/sunset-beach-panorama-landscape-7127298/ | WDhandoko | Pixabay License |
 | `web/public/models/museum.glb` (beige_wall_001, graded) | https://polyhaven.com/a/beige_wall_001 | Poly Haven | CC0 |
 | `web/public/models/museum.glb` (laminate_floor_02, graded) | https://polyhaven.com/a/laminate_floor_02 | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (garden: Jacaranda Tree, grown by its own geometry nodes from its .blend in `tools/bake/garden_assets.py`) | https://polyhaven.com/a/jacaranda_tree | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (garden bench, made in code by `tools/bake/garden_wood.py`: Teak Veneer texture, darkened) | https://polyhaven.com/a/teak_veneer | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (garden: Wicker Basket 02, reduced by `tools/bake/garden_assets.py`) | https://polyhaven.com/a/wicker_basket_02 | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (garden: Wine Bottles 01, reduced by `tools/bake/garden_assets.py`) | https://polyhaven.com/a/wine_bottles_01 | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (garden: Wooden Lantern 01, reduced by `tools/bake/garden_assets.py`) | https://polyhaven.com/a/wooden_lantern_01 | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (garden: Wooden Candlestick, reduced by `tools/bake/garden_assets.py`) | https://polyhaven.com/a/wooden_candlestick | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (garden: Pachira Aquatica 01, reduced by `tools/bake/garden_assets.py`) | https://polyhaven.com/a/pachira_aquatica_01 | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (garden: Wild Rooibos Bush, reduced by `tools/bake/garden_assets.py`) | https://polyhaven.com/a/wild_rooibos_bush | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (garden: Fern 02, reduced by `tools/bake/garden_assets.py`) | https://polyhaven.com/a/fern_02 | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (garden: Shrub 04, reduced by `tools/bake/garden_assets.py`) | https://polyhaven.com/a/shrub_04 | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (garden: Periwinkle Plant, reduced by `tools/bake/garden_assets.py`) | https://polyhaven.com/a/periwinkle_plant | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (garden: Dandelion 01, reduced by `tools/bake/garden_assets.py`) | https://polyhaven.com/a/dandelion_01 | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (garden: Flower Gazania, reduced by `tools/bake/garden_assets.py`) | https://polyhaven.com/a/flower_gazania | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (garden: Rock Moss Set 01, reduced by `tools/bake/garden_assets.py`) | https://polyhaven.com/a/rock_moss_set_01 | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (garden: Stone Fire Pit, reduced by `tools/bake/garden_assets.py`) | https://polyhaven.com/a/stone_fire_pit | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (garden: Dry Branches Medium 01, the fire's kindling) | https://polyhaven.com/a/dry_branches_medium_01 | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (the fire's firewood, made in code by `tools/bake/garden_wood.py`: Bark Brown 02 texture) | https://polyhaven.com/a/bark_brown_02 | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (the burnt earth round the fire pit, made in code by `tools/bake/garden_wood.py`: Burned Ground 01 texture, darkened) | https://polyhaven.com/a/burned_ground_01 | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (garden grass: Leafy Grass, tinted green by `tools/bake/garden_assets.py`) | https://polyhaven.com/a/leafy_grass | Poly Haven | CC0 |
+| `web/public/models/museum.glb` (the entrance courtyard's path: Precast Stone Paving, `tools/bake/entrance.py`; its lawn reuses the garden's grass, its wood the garden's Pachira trees and bushes) | https://polyhaven.com/a/precast_stone_paving | Poly Haven (Dimitrios Savva) | CC0 |
+| `web/public/models/museum.glb` (garden walls: Mossy Stone Wall, darkened by `tools/bake/garden_assets.py`) | https://polyhaven.com/a/mossy_stone_wall | Poly Haven | CC0 |
 | `web/public/fonts/dancing-script-latin-500-normal.woff2` | https://fonts.google.com/specimen/Dancing+Script | Impallari Type | SIL OFL (`OFL-DancingScript.txt`) |
 | `web/public/fonts/great-vibes-latin-400-normal.woff2` | https://fonts.google.com/specimen/Great+Vibes | TypeSETit | SIL OFL (`OFL-GreatVibes.txt`) |
 | `web/public/fonts/cormorant-garamond-latin-600-normal.woff2` | https://fonts.google.com/specimen/Cormorant+Garamond | Christian Thalmann | SIL OFL (`OFL-CormorantGaramond.txt`) |
-| `web/public/models/girl.glb` (character: White Wedding Dress Girl) | https://www.cgtrader.com/items/7216835 | FERUL | CGTrader Royalty Free License (`girl-LICENSE.txt`) |
-| `web/public/models/girl.glb` (idle + walk motion) | https://github.com/microsoft/Microsoft-Rocketbox | Microsoft | MIT (`girl-LICENSE.txt`) |
+| `web/public/fonts/lora-latin-500-normal.woff2`, `lora-latin-600-normal.woff2`, `lora-latin-500-italic.woff2` (via @fontsource/lora 5.1.0) | https://fonts.google.com/specimen/Lora | The Lora Project Authors (Cyreal) | SIL OFL (`OFL-Lora.txt`) |
