@@ -17,7 +17,7 @@ export interface NeonSignOptions {
 }
 
 const W = 2048, H = 664;             // the panel's words area, 1.42 m × 0.46 m (its UVs span the whole canvas): sharp up close
-const NEAR = 6;                      // switches on when you come this close (metres)
+const NEAR = 8;                      // switches on when you come this close (metres)
 const FLICKER = [0, 1, 0, 0, 0.6, 0, 1, 0.3, 1];   // its first moments, one step every 70 ms, then steady
 
 /** The words as glass tubes: a white-hot core with a coloured rim, crisp edged, in a soft glow close round them. */

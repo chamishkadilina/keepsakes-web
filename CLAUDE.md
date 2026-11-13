@@ -10,6 +10,7 @@ Read `BUILD_SPEC.md` before any task. Do one step, show the result, update `PROG
 - Never edit, regenerate or "fix" `museum.blend` or write scripts that rebuild the museum. If something in the model is wrong, tell the owner exactly what to change in Blender.
 - Read-only Blender scripts (check names, report sizes, render a preview) are allowed. Put them in `tools/`.
 - When the owner asks, helper scripts for mechanical work (lightmap UVs, baking, export) are allowed. They work on a copy and never change the design.
+- One exception: when the owner asks, Claude may build and change the garden in `tools/bake/garden.py` and `garden_layout.py` (CC0 models prepared by `garden_assets.py`, their placement and markers, and the garden walls' colour). Everything else stays hand-modelled by the owner.
 
 ## Rules
 1. Scope now: the experience only. No sign-in, payments, database or editor.

@@ -1,10 +1,10 @@
 import * as THREE from "three";
-import { HAND, SERIF, loadFonts } from "./fonts";
+import { SERIF, TEXT, loadFonts } from "./fonts";
 import { GOLD, INK, heart, wrap } from "./lettering";
 
 /**
- * Love notes hanging over the right gallery's open middle, one for each of his reasons (up to 24): cream cards on thin
- * red and gold ribbons from the ceiling, each reason in his handwriting on both sides with its number, slowly turning and
+ * Love notes hanging over the right gallery's open middle, one for each of his reasons (4 to 10): cream cards on thin
+ * red and gold ribbons from the ceiling, each reason in a clear italic serif on both sides with its number, slowly turning and
  * swaying a little. The model lists where they hang (the `love_notes` empty: userData.notes = x, y, z of a card's
  * middle, then its ribbon's top height, ... in Blender coordinates), in an order that spreads any number of cards over
  * the room. They hang above head height, so you walk under them. Not baked: `light` matches them to the room.
@@ -17,9 +17,9 @@ export interface LoveNoteOptions {
   fontsUrl?: string;                 // folder with the fonts (web/public/fonts)
 }
 
-const CARD_W = 0.22, CARD_H = 0.3;   // a card (metres)
-const CELL_W = 320, CELL_H = 436;    // a card on the texture (pixels)
-const COLS = 6, MAX = 24;
+const CARD_W = 0.46, CARD_H = 0.64;  // a card (metres): large enough to read from below
+const CELL_W = 400, CELL_H = 556;    // a card on the texture (pixels)
+const COLS = 6, MAX = 10;
 const RIBBON = 0.007;                // ribbon width (metres)
 
 function drawCards(reasons: string[]): HTMLCanvasElement {
@@ -38,9 +38,9 @@ function drawCards(reasons: string[]): HTMLCanvasElement {
     heart(g, cx, y0 + 52, 13);
     g.fillStyle = INK;
     g.textAlign = "center";
-    let size = 54, lines: string[] = [];
+    let size = 66, lines: string[] = [];
     for (; size > 22; size -= 2) {                                             // as large as fits in five lines
-      g.font = `500 ${size}px "${HAND}", cursive`;
+      g.font = `italic 500 ${size}px "${TEXT}", serif`;
       lines = wrap(g, reason, CELL_W - 64);
       if (lines.length <= 5 && lines.length * size * 1.2 <= CELL_H - 170) break;
     }

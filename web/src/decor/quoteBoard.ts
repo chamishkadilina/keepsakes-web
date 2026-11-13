@@ -1,10 +1,10 @@
 import * as THREE from "three";
 import { findProps } from "./findProps";
-import { CALLIGRAPHY, loadFonts } from "./fonts";
+import { TEXT, loadFonts } from "./fonts";
 import { GOLD, INK, capitals, heartRule, paper, wrap } from "./lettering";
 
 /**
- * The quote board in the heart room, on the gold easel left of the collage: the couple's own quote in calligraphy on
+ * The quote board in the heart room, on the gold easel left of the collage: the couple's own quote in a clear italic serif on
  * ivory, a fine gold border, a gold rule with a little heart, and their names and date in an elegant serif. The
  * board's roses frame two corners, so the writing keeps to the middle. Lit by the board's own baked light.
  * Call after applyBakedLighting; it only replaces the board's material (no extra draw call).
@@ -18,7 +18,7 @@ export interface QuoteBoardOptions {
   fontsUrl?: string;                 // folder with the fonts (web/public/fonts)
 }
 
-const W = 1080, H = 1498;            // the board's face, 0.93 m × 1.29 m (its UVs span the whole canvas)
+const W = 1080, H = 1498;            // the board's face, 1.12 m × 1.55 m (its UVs span the whole canvas)
 
 function draw({ quote, names, date }: QuoteBoardOptions): HTMLCanvasElement {
   const canvas = document.createElement("canvas");
@@ -27,10 +27,10 @@ function draw({ quote, names, date }: QuoteBoardOptions): HTMLCanvasElement {
   paper(g, W, H);
 
   const signed = !!(names || date);
-  const box = { left: 0.17 * W, right: 0.83 * W, top: 0.26 * H, bottom: (signed ? 0.63 : 0.72) * H };
-  let size = 124, lines: string[] = [];
-  for (; size > 40; size -= 4) {                                               // the quote as large as it fits
-    g.font = `${size}px "${CALLIGRAPHY}", cursive`;
+  const box = { left: 0.13 * W, right: 0.87 * W, top: 0.2 * H, bottom: (signed ? 0.66 : 0.76) * H };
+  let size = 96, lines: string[] = [];
+  for (; size > 36; size -= 4) {                                               // the quote as large as it fits
+    g.font = `italic 500 ${size}px "${TEXT}", serif`;
     lines = wrap(g, quote, box.right - box.left);
     if (lines.length * size * 1.25 <= box.bottom - box.top) break;
   }

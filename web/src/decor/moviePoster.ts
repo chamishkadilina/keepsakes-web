@@ -1,6 +1,6 @@
 import * as THREE from "three";
 import { findProps } from "./findProps";
-import { CALLIGRAPHY, SERIF, loadFonts } from "./fonts";
+import { CALLIGRAPHY, TEXT, loadFonts } from "./fonts";
 import { capitals, fit } from "./lettering";
 
 /**
@@ -47,14 +47,14 @@ function draw({ names = "", photo, title = "A Love Story", tagline = "Now showin
   g.fillText(title, W / 2, 0.775 * H);
   if (names) {
     g.fillStyle = GOLD;
-    capitals(g, "Starring", W / 2, 0.83 * H, 28, 0.4 * W);
+    capitals(g, "Starring", W / 2, 0.83 * H, 34, 0.4 * W);
     g.fillStyle = IVORY;
-    capitals(g, names, W / 2, 0.875 * H, 52, 0.84 * W);
+    capitals(g, names, W / 2, 0.88 * H, 62, 0.86 * W);
   }
   g.fillStyle = GOLD;
   g.textAlign = "center";
-  g.font = `600 30px "${SERIF}", serif`;
-  g.fillText(tagline, W / 2, 0.94 * H);
+  g.font = `italic 500 40px "${TEXT}", serif`;
+  g.fillText(tagline, W / 2, 0.945 * H);
   return canvas;
 }
 

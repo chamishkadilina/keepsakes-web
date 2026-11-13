@@ -14,6 +14,7 @@ export const ASSIGN = {
 export const PHOTO = {
   fullResDistance: 4, // m from the camera: swap the thumbnail for the full photo
   anisotropy: 8,
+  labelArea: [11, -11, 23, -1.5] as const, // only photos hung here get their caption label: the heart room's south half, by the dance floor (x0, z0, x1, z1, three.js m)
 }
 
 /** The collage in the heart-room niche, centred on `collage_board`: the niche opening (design/lighting.md). */

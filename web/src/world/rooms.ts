@@ -9,6 +9,7 @@ const ROOMS: { name: string; areas: Area[] }[] = [
   { name: 'Heart room', areas: [[11, 23, 1.5, 21]] },
   { name: 'Story gallery', areas: [[0, 11, 10, 21]] },
   { name: 'Foyer', areas: [[0, 11, 0, 10]] },
+  { name: 'Entrance', areas: [[-4, 16, -14, 0], [-4, 0, 0, 3.5], [11, 16, 0, 1.5]] }, // the clearing outside the foyer, where they start
 ]
 
 /** Room name for a three.js world position, or 'Outside'. */

@@ -1,4 +1,5 @@
 import { useEffect, useMemo } from 'react'
+import { PHOTO } from '../config/frames'
 import { createPhotoFrame, photoSizeForSlot } from '../frames/photoFrame'
 import type { GiftPhoto } from '../gift/gift'
 import { disposeGeometries } from './disposeGeometries'
@@ -9,8 +10,13 @@ import { usePhotoTextures } from './usePhotoTextures'
 /**
  * One photo in its ornate gold frame (frames/photoFrame.ts), hung on the wall at its slot.
  * The frame keeps the photo's own aspect ratio and fits inside the slot; the photo is never altered.
- * A photo with a caption gets its museum label under the frame.
+ * A photo with a caption gets its museum label under the frame, but only by the dance floor (PHOTO.labelArea).
  */
+function hasLabel({ x, z }: FrameSlot['position']): boolean {
+  const [x0, z0, x1, z1] = PHOTO.labelArea
+  return x > x0 && x < x1 && z > z0 && z < z1
+}
+
 export function FramedPhoto({ slot, photo }: { slot: FrameSlot; photo: GiftPhoto }) {
   const photos = useMemo(() => [photo], [photo])
   const textures = usePhotoTextures(photos, slot.position)
@@ -27,7 +33,7 @@ export function FramedPhoto({ slot, photo }: { slot: FrameSlot; photo: GiftPhoto
     if (frame) disposeGeometries(frame)
   }, [frame])
 
-  usePhotoPlaque(frame, photo.caption, slot.light)
+  usePhotoPlaque(frame, hasLabel(slot.position) ? photo.caption : undefined, slot.light)
 
   if (!frame) return null
   return <primitive object={frame} position={slot.position} quaternion={slot.quaternion} />

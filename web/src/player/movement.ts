@@ -70,7 +70,7 @@ function updateVelocity(s: MoveState, cameraYaw: number, dt: number) {
  * One physics step. The controller handles walls (slide) and steps
  * (autostep); height comes from a ground ray so the player stays exactly on
  * the floor (the controller's own grounded flag flickers on flat floors). The
- * ray sees only `floor_*` meshes. Furniture has no colliders: its footprints
+ * ray sees only `floor_*` meshes (and the invisible `col_floor_*` ground). Furniture has no colliders: its footprints
  * push the capsule back out.
  * Returns the next body position.
  */

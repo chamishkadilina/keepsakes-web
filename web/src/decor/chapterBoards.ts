@@ -1,11 +1,12 @@
 import * as THREE from "three";
 import { findProps } from "./findProps";
-import { CALLIGRAPHY, HAND, loadFonts } from "./fonts";
+import { SERIF, TEXT, loadFonts } from "./fonts";
 import { INK, boardAspect, boardMaterial, fit, heartRule, paper, wrap } from "./lettering";
 
 /**
  * Each chapter's title on its board, straight ahead as you come into its room, in the style of the foyer's title wall:
- * the title in calligraphy, a gold rule with a little heart and, if he wrote one, his line under it in handwriting.
+ * the title large in an elegant serif, a gold rule with a little heart and, if he wrote one, his line under it in a
+ * clear book serif (italic), large enough to read from across the room.
  * The story gallery's board reads "How It Began", the right gallery's "Reasons I Love You" (both can be changed).
  * Roses frame two corners, so the writing keeps to the middle. Lit by the boards' own baked light. Call after
  * applyBakedLighting; it only replaces the boards' materials (no extra draw call).
@@ -33,7 +34,7 @@ function draw(H: number, title: string, line?: string): HTMLCanvasElement {
   paper(g, W, H);
   g.fillStyle = INK;
   g.textAlign = "center";
-  const font = (size: number) => `${size}px "${CALLIGRAPHY}", cursive`;
+  const font = (size: number) => `600 ${size}px "${SERIF}", serif`;
   let rows = title.split("\n").map((r) => r.trim()).filter(Boolean);
   if (rows.length === 1 && fit(g, rows[0], font, 330, 0.76 * W) < 230 && rows[0].includes(" ")) {
     const words = rows[0].split(/\s+/);                                       // too long for one line: two, evenly split
@@ -53,10 +54,10 @@ function draw(H: number, title: string, line?: string): HTMLCanvasElement {
   if (line) {
     g.fillStyle = INK;
     g.textAlign = "center";
-    let size = 90, lines: string[] = [];
-    for (; size > 40; size -= 2) {                                             // as large as fits in two lines
-      g.font = `500 ${size}px "${HAND}", cursive`;
-      lines = wrap(g, line, 0.6 * W);
+    let size = 104, lines: string[] = [];
+    for (; size > 48; size -= 2) {                                             // as large as fits in two lines
+      g.font = `italic 500 ${size}px "${TEXT}", serif`;
+      lines = wrap(g, line, 0.7 * W);
       if (lines.length <= 2) break;
     }
     if (lines.length > 2) {

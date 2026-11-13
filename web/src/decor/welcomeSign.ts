@@ -1,12 +1,12 @@
 import * as THREE from "three";
 import { findProps } from "./findProps";
-import { CALLIGRAPHY, HAND, loadFonts } from "./fonts";
+import { CALLIGRAPHY, SERIF, TEXT, loadFonts } from "./fonts";
 import { GOLD, INK, boardAspect, boardMaterial, capitals, fit, heartRule, paper, wrap } from "./lettering";
 
 /**
  * The title wall in the foyer, straight ahead as she comes in, in its own spotlight: "Welcome to" in small capitals,
- * "The Museum of Us" in calligraphy, the couple's names, a gold rule with a little heart, the date, and his note in
- * handwriting. Roses frame its top-left and bottom-right corners, so the writing keeps to the middle. Lit by the
+ * "The Museum of Us" in calligraphy, the couple's names in an elegant serif, a gold rule with a little heart, the date,
+ * and his note in a clear book serif (italic). Roses frame its top-left and bottom-right corners, so the writing keeps to the middle. Lit by the
  * board's own baked light. Call after applyBakedLighting; it only replaces the board's material (no extra draw call).
  *
  *   await createWelcomeSign(gltf.scene, { names: "Kasun & Nethmi", date: "Since 3 June 2019", note: "Every photo here is a moment I never want to forget." });
@@ -36,7 +36,7 @@ function draw(H: number, { names, date, note, title = "The Museum of Us", line =
   let y = 0.37 * H;
   g.fillText(title, W / 2, y);
   if (names) {
-    fit(g, names, calligraphy, 185, 0.66 * W);
+    fit(g, names, (s) => `600 ${s}px "${SERIF}", serif`, 170, 0.7 * W);
     y += 0.18 * H;
     g.fillText(names, W / 2, y);
   }
@@ -51,10 +51,10 @@ function draw(H: number, { names, date, note, title = "The Museum of Us", line =
     g.fillStyle = INK;
     g.textAlign = "center";
     const top = y + 0.08 * H, room = 0.93 * H - top;                            // down to just above the bottom roses
-    let size = 84, lines: string[] = [];
-    for (; size > 30; size -= 2) {                                             // the note as large as fits, in up to three lines
-      g.font = `500 ${size}px "${HAND}", cursive`;
-      lines = wrap(g, note, 0.62 * W);
+    let size = 96, lines: string[] = [];
+    for (; size > 36; size -= 2) {                                             // the note as large as fits, in up to three lines
+      g.font = `italic 500 ${size}px "${TEXT}", serif`;
+      lines = wrap(g, note, 0.7 * W);
       if (lines.length <= 3 && size * (1.05 + 1.22 * (lines.length - 1)) <= room) break;
     }
     if (lines.length > 3) {

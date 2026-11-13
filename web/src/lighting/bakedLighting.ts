@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { keepLeavesAtDistance } from "./foliage";
 import { createBulbMatcap, createFoilMatcap, createGlassMaterial, createGoldMaterial, createSatinBlackMatcap, createSoftMatcap, createVelvetMatcap } from "./matcaps";
 import { createSheerMaterial } from "./sheerMaterial";
 
@@ -60,6 +61,7 @@ export async function applyBakedLighting(root: THREE.Object3D, lightmapsUrl: str
   const gold = createGoldMaterial();
   const glass = createGlassMaterial();
   const glow = new THREE.MeshBasicMaterial({ color: 0xfff0d8, toneMapped: false });
+  glow.name = "lens_glow";                                    // stays bright when the cinema dims (cinemaLights.ts)
   const bulbs = new THREE.MeshMatcapMaterial({ matcap: createBulbMatcap(), toneMapped: false });
   const sheer = createSheerMaterial();
   const screen = new THREE.MeshBasicMaterial({ color: new THREE.Color(SCREEN_WHITE, SCREEN_WHITE, SCREEN_WHITE * 0.98) });
@@ -69,7 +71,7 @@ export async function applyBakedLighting(root: THREE.Object3D, lightmapsUrl: str
   const litByVertex = (old: THREE.MeshStandardMaterial) => {
     if (!vertexLit.has(old)) {
       const color = old.color.clone().multiplyScalar(manifest.intensity);
-      const side = DOUBLE_SIDED.includes(old.name) ? THREE.DoubleSide : THREE.FrontSide;
+      const side = DOUBLE_SIDED.includes(old.name) || old.name.startsWith("garden_") ? THREE.DoubleSide : THREE.FrontSide;   // garden: leaves and petals
       if (old.map) { old.map.anisotropy = anisotropy; old.map.colorSpace = THREE.SRGBColorSpace; }
       const m = VELVET.includes(old.name)
         ? new THREE.MeshMatcapMaterial({ matcap: createVelvetMatcap(), color: color.multiplyScalar(VELVET_GAIN), vertexColors: true, side })
@@ -81,8 +83,9 @@ export async function applyBakedLighting(root: THREE.Object3D, lightmapsUrl: str
             ? new THREE.MeshMatcapMaterial({ matcap: createSatinBlackMatcap(), toneMapped: false })
           : old.name === "projector_white"
             ? new THREE.MeshMatcapMaterial({ matcap: createSoftMatcap(), color: new THREE.Color(0.86, 0.85, 0.83) })
-            : new THREE.MeshBasicMaterial({ color, map: old.map ?? null, vertexColors: true, side });
+            : new THREE.MeshBasicMaterial({ color, map: old.map ?? null, vertexColors: true, side, alphaTest: old.alphaTest });   // leaf cards keep their cut-out (alpha MASK)
       m.name = old.name;
+      if (old.alphaTest > 0) keepLeavesAtDistance(m as THREE.MeshBasicMaterial);   // leaf cards stay leafy far away
       vertexLit.set(old, m);
     }
     return vertexLit.get(old)!;
